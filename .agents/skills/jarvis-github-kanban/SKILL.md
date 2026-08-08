@@ -1,25 +1,48 @@
 ---
 name: jarvis-github-kanban
-description: Flujo completo de gestión de ítems en GitHub Projects (Jarvis · Interno). Usar SIEMPRE al crear, mover, debatir, ejecutar o cerrar ítems del kanban. Cubre estados, mutaciones GraphQL, IDs de campos/opciones, labels, versiones, kanban-sync.py, changelog auto-generado, y el ciclo de vida DraftIssue→Issue→Close. También al crear versiones nuevas, campos nuevos, o auditar el kanban.
+description: Flujo completo de gestión de ítems en GitHub Projects (Jarvis · Interno). Usar SIEMPRE al crear, mover, debatir, ejecutar o cerrar ítems del kanban. Cubre estados, la CLI kanban, IDs de campos/opciones, labels, versiones, changelog auto-generado, y el ciclo de vida DraftIssue→Issue→Close. También al crear versiones nuevas, campos nuevos, o auditar el kanban.
 ---
 
 # Jarvis — GitHub Kanban Workflow
 
-Flujo completo de gestión de ítems en el proyecto `Jarvis · Interno` (Project #5 de jaminsmoke).
+Flujo completo de gestión de ítems en el proyecto `Jarvis · Interno` (Project #6 de jaminsmoke).
+
+> 🛠 **Herramienta principal**: `bun kanban ...` (CLI TypeScript en `jaminsmoke/jarvis-skills/packages/kanban-cli`).
+> Los IDs de esta skill están en `.kanbanrc.json`. La CLI los carga automáticamente — no necesitas memorizarlos.
+> Usar `@jarvis-github-agentuse` para operaciones complementarias (issues, releases, secrets).
 
 ## Datos del proyecto
 
 | Dato | Valor |
 |---|---|
-| Project ID | `PVT_kwHOBM87Yc4Bfn48` |
-| Repo ID | `R_kgDOTv7ysw` |
+| Project ID | `PVT_kwHOBM87Yc4Bfu74` |
+| Repo ID | `R_kgDOTxw4Iw` |
 | Repo | `jaminsmoke/Jarvis` |
 | Rama default | `dev` |
-| URL kanban | https://github.com/users/jaminsmoke/projects/5 |
+| URL kanban | https://github.com/users/jaminsmoke/projects/6 |
+| .kanbanrc.json | Raíz del proyecto — cargado automáticamente por la CLI |
+
+## CLI kanban — referencia rápida
+
+```bash
+# Crear item con plantilla completa
+bun kanban create --title "Titulo" --tipo Bug --area Desktop --priority Alta
+
+# Leer/editar body
+bun kanban body <itemId>                    # leer
+bun kanban body <itemId> --set "..."        # reemplazar
+bun kanban body <itemId> --append "Plan" "contenido"  # añadir sección
+
+# Transicionar entre estados
+# (próximo comando: bun kanban move)
+
+# Auditoría + changelog
+# (próximo: bun kanban audit, bun kanban changelog)
+```
+
+Si la CLI no está disponible, usar los comandos de bajo nivel descritos abajo con `gh api graphql`.
 
 ## Setup del Project (primera vez)
-
-Esta skill asume que el Project ya existe. Para crear uno nuevo:
 
 ### 1. Crear el Project
 
@@ -38,36 +61,26 @@ En Project Settings → Fields → + New field (SingleSelect para todos):
 | **Status** | Detectado, Debate, Roadmap, Ejecutando, Verificando, Changelog | Marcar "Changelog" como "Done" en la UI |
 | **Versión** | Sin asignar, v0.1.0 | Añadir versiones según releases |
 | **Prioridad** | Alta, Media, Baja | |
-| **Decisión** | Decidido, Descartado, Diferido | |
+| **Decisión** | Pendiente, Aprobado, Diferido, Cancelado | |
 | **Tipo** | Bug, Feature, Maintenance, Security, Decision | |
 | **Área principal** | App, Desktop, Core, Server, CI, Infra, Docs, Lint, Dependencies, Release, Governance, Upstream | |
 | **HighLighted** | Yes, No | |
 
 Campos Date: **Inicio**, **Completado**. Campos Text: **Inicio exacto**, **Completado exacto**.
 
-> ⚠️ Los IDs de campos y opciones cambian en cada Project. Obtenerlos con `gh project field-list` y `gh api graphql` y actualizar esta skill.
+> ⚠️ Los IDs de campos y opciones cambian en cada Project. Generar `.kanbanrc.json` consultando con `gh project field-list` + `gh api graphql`.
 
 ### 4. Configurar la vista Kanban
 
-En la vista principal (tab "Kanban"):
+En la vista principal (tab "Kanban") — **solo UI, no hay API**:
 - **Layout**: Board
 - **Group by**: Status
-- **Slice by**: (ninguno)
 - **Sort**: manual (drag & drop)
 - **Visible fields**: Title, Status, Versión, Prioridad, Tipo, Área principal
 
-La vista se configura exclusivamente desde la UI (no hay API para `groupBy` ni layout).
-
 ### 5. Workflow de estados
 
-En Project Settings → Workflows, configurar que "Changelog" cierre automáticamente los issues al moverse allí:
-- Status → Changelog → Set item to "Done" (close issue)
-
-Esto aplica el check de completado automáticamente.
-
-### Skills complementarias
-
-> 📘 Usar junto con `jarvis-github-agentuse` para todas las operaciones de gh CLI, MCP, GraphQL y REST necesarias durante el setup y gestión diaria.
+Project Settings → Workflows → Status → Changelog → Set item to "Done" (close issue).
 
 ## Ciclo de vida de un item
 
@@ -79,20 +92,21 @@ Detectado → Debate → Roadmap → Ejecutando → Verificando → Changelog
 ### Reglas generales
 
 - **0 Drafts en Changelog**: todos los items en Changelog deben ser Issues reales cerrados.
-- **Sin saltos**: cada item avanza en orden. Excepción: Descartado (va directo a Changelog como Issue cerrado).
-- **Versión objetivo móvil**: la siguiente versión posterior a la release `latest`. Si `latest = v0.1.4`, objetivo = `v0.1.5`.
+- **Sin saltos**: cada item avanza en orden. Excepción: Cancelado va directo a Changelog.
+- **Versión objetivo móvil**: siguiente versión posterior a la release `latest`.
 - **Body acumulativo**: el cuerpo empieza en Detectado y evoluciona sin perder secciones.
-- **Tipo Draft/Issue**: DraftIssue tiene título y cuerpo pero NO labels, assignee, número, estado open/closed. Issue tiene todo.
 
 ### 1. Detectado → Crear item
 
-```graphql
-addProjectV2DraftIssue(projectId, title, body)
+```bash
+bun kanban create \
+  --title "Rebranding runtime desktop/src/main" \
+  --tipo Maintenance --area Desktop --priority Alta
 ```
 
-**Obligatorio**: título concreto, cuerpo con plantilla completa, Versión, Prioridad, Inicio e Inicio exacto (del `createdAt`).
+**Obligatorio**: título concreto, cuerpo con plantilla completa, Versión, Prioridad, Inicio e Inicio exacto.
 
-**Plantilla del cuerpo**:
+**Plantilla del cuerpo** (la CLI la genera automáticamente):
 ```markdown
 ## Contexto
 <situación, objetivo, por qué importa ahora>
@@ -108,7 +122,6 @@ addProjectV2DraftIssue(projectId, title, body)
 
 ## Preguntas para Debate
 1. <pregunta>
-2. <pregunta>
 
 ## Criterio para avanzar
 <evidencia mínima para pasar a Roadmap>
@@ -123,60 +136,42 @@ addProjectV2DraftIssue(projectId, title, body)
 
 ### 2. Debate → Discutir y decidir
 
-```graphql
-updateProjectV2ItemFieldValue → Status: "Debate"
+Mover a Debate desde la UI (drag & drop) o con GraphQL:
+```bash
+gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: {projectId: "PVT_kwHOBM87Yc4Bfu74", itemId: "<ITEM_ID>", fieldId: "PVTSSF_lAHOBM87Yc4Bfu74zhZ_v1g", value: {singleSelectOptionId: "ddac116a"}}) { clientMutationId } }'
 ```
 
-Editar el cuerpo: responder preguntas, añadir alternativas y trade-offs.
+Actualizar el cuerpo con alternativas y trade-offs:
+```bash
+bun kanban body <itemId> --append "Alternativas" "1. Opción A: ... 2. Opción B: ..."
+```
 
 Al cerrar el debate:
-- `Decisión: Decidido` → avanza a Roadmap
-- `Decisión: Descartado` → documentar motivo, convertir a Issue, cerrar, Changelog
+- `Decisión: Aprobado` → avanza a Roadmap
+- `Decisión: Cancelado` → documentar motivo, convertir a Issue, cerrar, Changelog
 - `Decisión: Diferido` → documentar motivo y condición, devolver a Detectado
 
 ### 3. Roadmap → Planificar
 
-```graphql
-updateProjectV2ItemFieldValue → Status: "Roadmap"
-updateProjectV2ItemFieldValue → Decisión: "Decidido"
-```
-
-Añadir al cuerpo:
-```markdown
-## Decisión acordada
-<opción elegida y razones>
-
-## Plan aprobado
-1. <cambio concreto>
-2. <siguiente paso>
-
-## Criterios de aceptación
-- [ ] <resultado observable>
-
-## Plan de verificación
-- <typecheck/lint/tests>
-
-## Riesgos y recuperación
-<riesgos y forma de revertir>
+Mover a Roadmap (UI o GraphQL). Añadir al cuerpo:
+```bash
+bun kanban body <itemId> --append "Plan aprobado" "1. Crear branch feature/x\n2. Implementar..."
+bun kanban body <itemId> --append "Criterios de aceptación" "- [ ] typecheck limpio\n- [ ] test manual OK"
 ```
 
 ### 4. Ejecutando → Convertir a Issue (ANTES de escribir código)
 
-```graphql
-# 1. Leer y conservar title + body del DraftIssue
-query { node(id: $ITEM_ID) { ... on ProjectV2Item { content { ... on DraftIssue { title, body } } } } }
+```bash
+# 1. Convertir DraftIssue → Issue (GraphQL)
+gh api graphql -f query='mutation { convertProjectV2DraftIssueItemToIssue(input: {itemId: "<ITEM_ID>", repositoryId: "R_kgDOTxw4Iw"}) { clientMutationId } }'
 
-# 2. Convertir
-convertProjectV2DraftIssueItemToIssue(itemId, repositoryId)
+# 2. Verificar que el Issue se creó
+gh project item-list 6 --owner jaminsmoke --limit 5 | grep "<title>"
 
-# 3. Verificar title + body preservados
-query { node(id: $ITEM_ID) { ... on ProjectV2Item { content { ... on Issue { number, title, body } } } } }
+# 3. Añadir labels según Tipo + Área
+gh issue edit <N> --repo jaminsmoke/Jarvis --add-label "feature,infra"
 
-# 4. Aplicar labels
-addLabelsToLabelable(labelableId, labelIds)
-
-# 5. Status → Ejecutando
-updateProjectV2ItemFieldValue → Status: "Ejecutando"
+# 4. Mover a Ejecutando (UI o GraphQL)
 ```
 
 - **Nunca reemplazar** el cuerpo por plantilla vacía.
@@ -185,143 +180,68 @@ updateProjectV2ItemFieldValue → Status: "Ejecutando"
 
 ### 5. Verificando → Documentar implementación
 
-```graphql
-updateProjectV2ItemFieldValue → Status: "Verificando"
-```
-
-Añadir al cuerpo SIN borrar contexto:
-```markdown
-## Implementación
-**Commit**: <sha> (rama dev)
-**Archivos**: <lista>
-<decisiones técnicas y desviaciones>
-
-## Verificación
-<pendiente hasta completar todos los checks>
+Mover a Verificando. Añadir al cuerpo SIN borrar contexto:
+```bash
+bun kanban body <itemId> --append "Implementación" "Commit: <sha>\nArchivos: <lista>\n<decisiones técnicas>"
 ```
 
 ### 6. Changelog → Cerrar
 
-```graphql
-# 1. Actualizar cuerpo con verificación final
+```bash
+# 1. Añadir verificación final al body
+gh issue edit <N> --repo jaminsmoke/Jarvis --body "..."
+
 # 2. Añadir ✅ al título
+gh issue edit <N> --repo jaminsmoke/Jarvis --title "✅ Título original"
+
 # 3. Cerrar Issue
-closeIssue(issueId)
-# 4. Campos del Project
-updateProjectV2ItemFieldValue → Status: "Changelog"
-updateProjectV2ItemFieldValue → Completado (Date)
-updateProjectV2ItemFieldValue → Completado exacto (Text, UTC ISO 8601)
-updateProjectV2ItemFieldValue → HighLighted: "Yes" (si aplica)
+gh issue close <N> --repo jaminsmoke/Jarvis -r completed
+
+# 4. Mover a Changelog (UI o GraphQL)
+
 # 5. Regenerar changelog
 python scripts/kanban-sync.py changelog
 ```
 
-## Mutaciones GraphQL clave
+## IDs de campos y opciones (Project #6)
 
-| Mutación | Input | Uso |
-|---|---|---|
-| `addProjectV2DraftIssue` | projectId, title, body | Crear Draft |
-| `updateProjectV2DraftIssue` | draftIssueId, title, body | Editar Draft (usar json.dumps para body) |
-| `updateProjectV2ItemFieldValue` | projectId, itemId, fieldId, value | Setear cualquier campo |
-| `convertProjectV2DraftIssueItemToIssue` | itemId, repositoryId | Draft → Issue |
-| `addLabelsToLabelable` | labelableId, labelIds | Añadir labels |
-| `closeIssue` | issueId | Cerrar Issue |
-| `deleteProjectV2Item` | projectId, itemId | Eliminar item |
+> 🔧 **No memorizar** — la CLI los carga de `.kanbanrc.json`. Esta tabla es referencia para operaciones manuales.
 
-## Status IDs
+### Campos
 
-| Status | Option ID |
+| Campo | Field ID |
 |---|---|
-| Detectado | `0a2ea60d` |
-| Debate | `12bff49e` |
-| Roadmap | `e0f179d6` |
-| Ejecutando | `5983e216` |
-| Verificando | `4885da16` |
-| Changelog | `7874500c` |
+| Status | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_v1g` |
+| Versión | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_weA` |
+| Prioridad | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb4` |
+| Decisión | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb0` |
+| Tipo | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbw` |
+| Área principal | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_wwc` |
+| HighLighted | `PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbs` |
 
-## Campos personalizados
+### Status
 
-| Campo | Field ID | Tipo | Opciones |
-|---|---|---|---|
-| Status | `PVTSSF_lAHOBM87Yc4Bfn48zhZ5fDo` | SingleSelect | Ver tabla arriba |
-| Versión | `PVTSSF_lAHOBM87Yc4Bfn48zhZ5goQ` | SingleSelect | Releases |
-| Prioridad | `PVTSSF_lAHOBM87Yc4Bfn48zhZ5goU` | SingleSelect | Alta/Media/Baja |
-| Decisión | `PVTSSF_lAHOBM87Yc4Bfn48zhZ5jKI` | SingleSelect | Decidido/Descartado/Diferido |
-| Tipo | `PVTSSF_lAHOBM87Yc4Bfn48zhZ8Pgs` | SingleSelect | Bug/Feature/Maintenance/Security/Decision |
-| Área principal | `PVTSSF_lAHOBM87Yc4Bfn48zhZ8Pis` | SingleSelect | App/Desktop/Core/Server/CI/Infra/Docs/Lint/Dependencies/Release/Governance/Upstream |
-| HighLighted | `PVTSSF_lAHOBM87Yc4Bfn48zhZ-CSY` | SingleSelect | Yes/No |
-| Inicio | `PVTF_lAHOBM87Yc4Bfn48zhZ8bRE` | Date | Día local |
-| Inicio exacto | `PVTF_lAHOBM87Yc4Bfn48zhZ8bRI` | Text | UTC ISO 8601 |
-| Completado | `PVTF_lAHOBM87Yc4Bfn48zhZ5mT8` | Date | Día local |
-| Completado exacto | `PVTF_lAHOBM87Yc4Bfn48zhZ8bRM` | Text | UTC ISO 8601 |
-
-## Option IDs por campo
-
-### Versión
 | Opción | ID |
 |---|---|
-| v0.1.0 | `15905bd2` |
-| v0.1.1 | `f2c85aca` |
-| v0.1.2 | `ac87c877` |
-| v0.1.3 | `9e7509ea` |
-| v0.1.4 | `66fdab55` |
-| v0.1.5 | `469e6317` |
-| Sin asignar | `837adc26` |
+| Detectado | `ef2fdff4` |
+| Debate | `ddac116a` |
+| Roadmap | `0ca99905` |
+| Ejecutando | `79f82a08` |
+| Verificando | `741a25fa` |
+| Changelog | `f9a1286b` |
 
-### Prioridad
-| Opción | ID |
-|---|---|
-| Alta | `5d462692` |
-| Media | `8759d88f` |
-| Baja | `491c0a1b` |
+### Resto de opciones
 
-### Decisión
-| Opción | ID |
-|---|---|
-| Decidido | `21adec4d` |
-| Descartado | `c4245afc` |
-| Diferido | `3e191ae5` |
-
-### Tipo
-| Opción | ID |
-|---|---|
-| Bug | `b691c1c3` |
-| Feature | `d1c781da` |
-| Maintenance | `cc0d870e` |
-| Security | `e0113689` |
-| Decision | `5b30cb08` |
-
-### Área principal
-| Opción | ID |
-|---|---|
-| App | `60f552c6` |
-| Desktop | `0d7ae8e0` |
-| Core | `295fb2fd` |
-| Server | `6a079565` |
-| CI | `000da29f` |
-| Infra | `b6546326` |
-| Docs | `b592ee68` |
-| Lint | `c2734252` |
-| Dependencies | `9ad312e3` |
-| Release | `f304f880` |
-| Governance | `47729191` |
-| Upstream | `05960faf` |
-
-### HighLighted
-| Opción | ID |
-|---|---|
-| Yes | `70a25690` |
-| No | `30d8c17f` |
+Consultar `.kanbanrc.json` en la raíz del proyecto para Prioridad, Decisión, Tipo, Área, Versión, HighLighted.
 
 ## Versión objetivo móvil
 
 1. Consultar release `latest` en GitHub. No asumirla.
 2. Derivar siguiente patch: `vX.Y.(Z+1)`.
 3. Si el alcance exige minor/major, decidirlo en Debate.
-4. Antes de crear items, verificar que la opción existe en el campo Versión.
-5. **Crear nueva versión**: NO hay API. Ir a Project Settings → Fields → Versión → Add option. Luego actualizar esta skill con el nuevo ID.
-6. Al publicar la versión, crear preventivamente la siguiente opción.
-7. `Sin asignar` es siempre inconsistencia — corregir.
+4. **Crear nueva versión**: NO hay API. Ir a Project Settings → Fields → Versión → Add option. Luego regenerar `.kanbanrc.json`.
+5. Al publicar la versión, crear preventivamente la siguiente opción.
+6. `Sin asignar` es siempre inconsistencia — corregir.
 
 ## Labels canónicas
 
@@ -345,70 +265,22 @@ python scripts/kanban-sync.py changelog
 | `security` | Vulnerabilidad, secreto, hardening |
 | `decision` | Decisiones D-XXX |
 
-- Elegir exactamente 1 Tipo + 1 Área antes de Ejecutando.
-- No usar `feature` para bugs, CI, docs, seguridad.
-- No mezclar aliases heredados: `documentation` → `docs`, `enhancement` → `feature`.
+## Changelog auto-generado
 
-## Script kanban-sync
-
-Vive en `Jarvis/scripts/kanban-sync.py`. Comandos:
-
-```bash
-python scripts/kanban-sync.py changelog  # Regenera HTML + JSON
-python scripts/kanban-sync.py audit      # Verifica campos correctos
-python scripts/kanban-sync.py move <itemId> <fromStatus> <toStatus>  # Transiciones
-```
-
-### Changelog auto-generado
-
-- **`docs/changelog.html`**: todos los Issues cerrados agrupados por versión. Generado por `kanban-sync.py changelog`.
-- **`docs/changelog.json`**: solo items con `HighLighted: Yes` (3-5 por versión). Generado por `scripts/generate-changelog-json.py`. Lo consume el modal `DialogReleaseNotes` de la app.
-- Ambos se regeneran en CI (`ci-quality.yml` job `changelog`) y al cerrar items.
-- El HTML es determinista (sin timestamp) — solo cambia si el kanban cambió.
-
-### Crear nuevo campo en el Project
-
-NO hay API — solo UI:
-1. Ir a https://github.com/users/jaminsmoke/projects/5/settings
-2. Fields → + New field → elegir tipo (SingleSelect recomendado)
-3. Añadir opciones
-4. Obtener IDs consultando:
-```bash
-gh project field-list 5 --owner jaminsmoke --format json
-gh api graphql -f query='query{node(id:"FIELD_ID"){...on ProjectV2SingleSelectField{name,options{id,name}}}}'
-```
-5. Actualizar esta skill con los nuevos IDs.
+- **`docs/changelog.html`**: todos los Issues cerrados agrupados por versión.
+- **`docs/changelog.json`**: solo items con `HighLighted: Yes`.
+- Ambos se regeneran en CI (`ci-quality.yml` job `changelog`).
+- Se ejecutan con `python scripts/kanban-sync.py changelog`.
 
 ## CI: job changelog
 
-En `ci-quality.yml`, job `Regenerate changelog`:
+En `ci-quality.yml`:
 - Ejecuta `python scripts/kanban-sync.py changelog`
 - Si hay diff en `docs/`, commitea y pushea
-- Usa `GH_PAT` (classic PAT con `read:project`) — GITHUB_TOKEN no accede a Projects
-- Sin `continue-on-error` — falla honestamente si el token no funciona
+- Usa `GH_PAT` (classic PAT con `read:project`)
 
-## Ejecución de GraphQL (sin archivos temporales)
+## Regla: operaciones one-shot SIN scripts temporales
 
-**PROHIBIDO** crear scripts one-shot (`.py`, `.sh`, `.gql`, `.tmp*`) ni dentro ni fuera del repo para operaciones puntuales.
-
-- **Queries/mutaciones cortas** — inline:
-```bash
-gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: {projectId: "...", itemId: "...", fieldId: "...", value: {singleSelectOptionId: "..."}}) { clientMutationId } }'
-```
-- **Queries largas o con bodies grandes** — por stdin (heredoc), sin volcar a archivo:
-```bash
-gh api graphql -F query=@- <<'GQL'
-query { node(id: "...") { ... on ProjectV2Item { content { ... on DraftIssue { body } } } } }
-GQL
-```
-- **Issue bodies grandes**: `gh issue edit N --body-file -` con el body por stdin.
-- **Lógica extra** (parsear/iterar): `python -c "..."` inline que invoca `gh api` con la query por stdin; la query se puede pasar como heredoc dentro del comando. Nunca `write_file` a un script.
-- Para escapar caracteres especiales en bodies, usar `jq -Rs .` o `python -c "import json,sys; print(json.dumps(sys.stdin.read()))"` — sin archivos.
-
-## Regla: operaciones one-shot SIN scripts (ni dentro ni fuera del repo)
-
-- Ejecutar operaciones puntuales **directamente con `gh` o MCP**: inline, por stdin, o `python -c` con la lógica inline.
-- **NUNCA** crear `_*.py` / `_*.gql` / `.tmp*` / `.sh` en ningún sitio (ni `Jarvis/scripts/`, ni `/tmp`, ni `C:/tmp`) para operaciones one-shot.
-- **Solo versionar scripts en `Jarvis/scripts/`** si son reutilizables (`kanban-sync.py`, `generate-changelog-json.py`, `kanban-close.ps1`), con docstring y tests en `scripts/tests/`.
-- Si una operación se repite: convertirla a comando de skill o script versionado con tests; nunca dejar temporales.
-- Al terminar cada tarea de items: `git status` debe quedar limpio (no se generan temporales si no se crean).
+- Ejecutar operaciones puntuales **directamente con `gh` o `bun kanban`**: inline, por stdin, o `python -c` con la lógica inline.
+- **NUNCA** crear `_*.py` / `_*.gql` / `.tmp*` / `.sh` para operaciones one-shot.
+- **Solo versionar scripts** reutilizables (`kanban-sync.py`, `generate-changelog-json.py`), con docstring y tests en `scripts/tests/`.
