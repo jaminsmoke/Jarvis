@@ -166,7 +166,7 @@ jobs:
       - name: Build and package (prod, publish to GitHub release)
         shell: bash
         env:
-          OPENCODE_CHANNEL: prod
+          JARVIS_CHANNEL: prod
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AZURE_TRUSTED_SIGNING_ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
@@ -275,7 +275,7 @@ jobs:
       - name: Build and package (prod, publish to GitHub release)
         shell: bash
         env:
-          OPENCODE_CHANNEL: prod
+          JARVIS_CHANNEL: prod
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -385,7 +385,7 @@ jobs:
       - name: Build and package (prod, publish to GitHub release)
         shell: bash
         env:
-          OPENCODE_CHANNEL: prod
+          JARVIS_CHANNEL: prod
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: --max-old-space-size=8192
