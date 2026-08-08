@@ -32,11 +32,11 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <content_rating type="oars-1.1" />
 
   <!-- TODO(jarvis): apuntar a https://github.com/jaminsmoke/Jarvis cuando haya docs propias -->
-  <url type="bugtracker">https://github.com/anomalyco/jarvis/issues</url>
+  <url type="bugtracker">https://github.com/jaminsmoke/Jarvis/issues</url>
   <!-- TODO(jarvis): homepage real cuando exista web propia (jarvis.ai es placeholder) -->
   <url type="homepage">https://jarvis.ai</url>
   <!-- TODO(jarvis): apuntar a https://github.com/jaminsmoke/Jarvis -->
-  <url type="vcs-browser">https://github.com/anomalyco/jarvis</url>
+  <url type="vcs-browser">https://github.com/jaminsmoke/Jarvis</url>
 </component>
 `
 

@@ -1,18 +1,21 @@
 {
   "projectId": "PVT_kwHOBM87Yc4Bfu74",
-  "repoId": "R_kgDOTxw4Iw",
+  "repoId": "R_kgDOTx4wIw",
   "repo": "jaminsmoke/Jarvis",
   "fields": {
     "Status": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_v1g",
-    "Versión": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_weA",
-    "Prioridad": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb4",
-    "Decision": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb0",
-    "Tipo": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbw",
-    "Área principal": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wwc",
+    "Created": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2A",
+    "Updated": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2E",
+    "Closed": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2I",
+    "Completado": "PVTF_lAHOBM87Yc4Bfu74zhZ_wbo",
     "HighLighted": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbs",
+    "Tipo": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbw",
+    "Decision": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb0",
+    "Prioridad": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb4",
+    "Versión": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_weA",
+    "Área principal": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wwc",
     "Inicio": "PVTF_lAHOBM87Yc4Bfu74zhZ_wwg",
     "Inicio exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wxY",
-    "Completado": "PVTF_lAHOBM87Yc4Bfu74zhZ_wbo",
     "Completado exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wyQ"
   },
   "options": {
