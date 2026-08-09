@@ -815,6 +815,7 @@ export const dict = {
   "settings.connectors.badge.connected": "接続済み",
   "settings.connectors.badge.notConnected": "未接続",
   "settings.connectors.badge.disabled": "無効",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "GitHubアカウントを接続すると、Jarvisがリポジトリを読み取り・管理できるようになります。",
   "settings.connectors.github.detail": "GitHubアカウントを接続すると、Jarvisがチャットから直接リポジトリ、Issue、プルリクエストを操作できるようになります。アクセスはご自身のGitHubアカウントでOAuthにより許可します — Jarvisがパスワードを見ることはありません。",

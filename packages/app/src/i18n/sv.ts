@@ -913,6 +913,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Ansluten",
   "settings.connectors.badge.notConnected": "Inte ansluten",
   "settings.connectors.badge.disabled": "Inaktiverad",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Anslut ditt GitHub-konto så att Jarvis kan läsa och hantera dina databaser.",
   "settings.connectors.github.detail": "Anslut ditt GitHub-konto så att Jarvis kan arbeta med dina databaser, ärenden och pull requests direkt från chatten. Du beviljar åtkomst med ditt eget GitHub-konto via OAuth — Jarvis ser aldrig ditt lösenord.",

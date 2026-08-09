@@ -877,6 +877,7 @@ export const dict = {
   "settings.connectors.badge.connected": "已连接",
   "settings.connectors.badge.notConnected": "未连接",
   "settings.connectors.badge.disabled": "已禁用",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "连接你的 GitHub 账户，让 Jarvis 读取和管理你的仓库。",
   "settings.connectors.github.detail": "连接你的 GitHub 账户，让 Jarvis 直接在聊天中处理你的仓库、问题和拉取请求。你通过 OAuth 使用自己的 GitHub 账户授权访问——Jarvis 绝不会看到你的密码。",

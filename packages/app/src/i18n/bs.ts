@@ -893,6 +893,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Povezano",
   "settings.connectors.badge.notConnected": "Nije povezano",
   "settings.connectors.badge.disabled": "Onemogućeno",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Povežite svoj GitHub račun kako bi Jarvis mogao čitati i upravljati vašim repozitorijima.",
   "settings.connectors.github.detail": "Povežite svoj GitHub račun kako bi Jarvis mogao raditi s vašim repozitorijima, issue-ima i pull request-ovima direktno iz chata. Ovlašćujete pristup svojim GitHub računom putem OAuth-a — Jarvis nikada ne vidi vašu lozinku.",

@@ -895,6 +895,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Подключено",
   "settings.connectors.badge.notConnected": "Не подключено",
   "settings.connectors.badge.disabled": "Отключено",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Подключите аккаунт GitHub, чтобы Jarvis мог читать и управлять вашими репозиториями.",
   "settings.connectors.github.detail": "Подключите аккаунт GitHub, чтобы Jarvis мог работать с вашими репозиториями, issues и pull request прямо из чата. Вы предоставляете доступ через свой аккаунт GitHub по OAuth — Jarvis никогда не видит ваш пароль.",

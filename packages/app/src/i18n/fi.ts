@@ -807,6 +807,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Yhdistetty",
   "settings.connectors.badge.notConnected": "Ei yhdistetty",
   "settings.connectors.badge.disabled": "Poistettu käytöstä",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Yhdistä GitHub-tilisi, jotta Jarvis voi lukea ja hallita säilöjäsi.",
   "settings.connectors.github.detail": "Yhdistä GitHub-tilisi, jotta Jarvis voi käsitellä säilöjäsi, issueita ja pull requesteja suoraan chatissa. Annat pääsyn omalla GitHub-tililläsi OAuthin kautta — Jarvis ei koskaan näe salasanaasi.",

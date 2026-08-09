@@ -880,6 +880,7 @@ export const dict = {
   "settings.connectors.badge.connected": "เชื่อมต่อแล้ว",
   "settings.connectors.badge.notConnected": "ยังไม่ได้เชื่อมต่อ",
   "settings.connectors.badge.disabled": "ปิดใช้งาน",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "เชื่อมต่อบัญชี GitHub ของคุณเพื่อให้ Jarvis อ่านและจัดการที่เก็บโค้ดของคุณได้",
   "settings.connectors.github.detail": "เชื่อมต่อบัญชี GitHub ของคุณเพื่อให้ Jarvis ทำงานกับที่เก็บโค้ด ปัญหา (issues) และคำขอดึง (pull requests) ของคุณได้โดยตรงจากแชท คุณอนุญาตการเข้าถึงด้วยบัญชี GitHub ของคุณผ่าน OAuth — Jarvis ไม่เคยเห็นรหัสผ่านของคุณ",

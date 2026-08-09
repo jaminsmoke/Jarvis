@@ -769,6 +769,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Forbundet",
   "settings.connectors.badge.notConnected": "Ikke forbundet",
   "settings.connectors.badge.disabled": "Deaktiveret",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Forbind din GitHub-konto, så Jarvis kan læse og administrere dine repositories.",
   "settings.connectors.github.detail": "Forbind din GitHub-konto, så Jarvis kan arbejde med dine repositories, issues og pull requests direkte fra chatten. Du giver adgang med din egen GitHub-konto via OAuth — Jarvis ser aldrig din adgangskode.",

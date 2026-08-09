@@ -576,6 +576,7 @@ export const dict = {
   "settings.connectors.badge.connected": "연결됨",
   "settings.connectors.badge.notConnected": "연결 안 됨",
   "settings.connectors.badge.disabled": "비활성화됨",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "GitHub 계정을 연결하면 Jarvis가 저장소를 읽고 관리할 수 있습니다.",
   "settings.connectors.github.detail": "GitHub 계정을 연결하면 Jarvis가 채팅에서 직접 저장소, 이슈, 풀 리퀘스트를 다룰 수 있습니다. OAuth를 통해 본인 GitHub 계정으로 접근을 승인합니다 — Jarvis는 비밀번호를 절대 볼 수 없습니다.",

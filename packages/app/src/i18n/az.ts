@@ -917,6 +917,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Qoşulub",
   "settings.connectors.badge.notConnected": "Qoşulmayıb",
   "settings.connectors.badge.disabled": "Deaktiv",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "GitHub hesabınızı qoşun ki, Jarvis depolarınızı oxuya və idarə edə bilsin.",
   "settings.connectors.github.detail": "GitHub hesabınızı qoşun ki, Jarvis depolarınız, issue və pull request-lərinizlə birbaşa söhbətdən işləyə bilsin. Siz OAuth vasitəsilə GitHub hesabınızla girişi səlahiyyətləndirirsiniz — Jarvis şifrənizi heç vaxt görmür.",

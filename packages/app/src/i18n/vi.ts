@@ -919,6 +919,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Đã kết nối",
   "settings.connectors.badge.notConnected": "Chưa kết nối",
   "settings.connectors.badge.disabled": "Đã tắt",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "Kết nối tài khoản GitHub của bạn để Jarvis có thể đọc và quản lý kho lưu trữ của bạn.",
   "settings.connectors.github.detail": "Kết nối tài khoản GitHub của bạn để Jarvis có thể làm việc với kho lưu trữ, vấn đề (issue) và yêu cầu kéo (pull request) của bạn trực tiếp từ cuộc trò chuyện. Bạn ủy quyền truy cập bằng tài khoản GitHub của mình qua OAuth — Jarvis không bao giờ thấy mật khẩu của bạn.",

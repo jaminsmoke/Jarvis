@@ -836,6 +836,7 @@ export const dict = {
   "settings.connectors.badge.connected": "متصل",
   "settings.connectors.badge.notConnected": "غير متصل",
   "settings.connectors.badge.disabled": "معطّل",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "اربط حساب GitHub الخاص بك ليتمكن Jarvis من قراءة مستودعاتك وإدارتها.",
   "settings.connectors.github.detail": "اربط حساب GitHub الخاص بك ليتمكن Jarvis من العمل مع مستودعاتك وقضاياك وطلبات السحب مباشرة من الدردشة. تقوم بالتفويض عبر OAuth بحساب GitHub الخاص بك — لا يطّلع Jarvis على كلمة مرورك أبداً.",

@@ -898,6 +898,7 @@ export const dict = {
   "settings.connectors.badge.connected": "Bağlı",
   "settings.connectors.badge.notConnected": "Bağlı değil",
   "settings.connectors.badge.disabled": "Devre dışı",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "GitHub hesabınızı bağlayarak Jarvis'in depolarınızı okumasını ve yönetmesini sağlayın.",
   "settings.connectors.github.detail": "GitHub hesabınızı bağlayın, böylece Jarvis depolarınız, sorunlarınız ve çekme isteklerinizle doğrudan sohbetten çalışabilir. Erişimi kendi GitHub hesabınızla OAuth üzerinden yetkilendirirsiniz — Jarvis şifrenizi asla görmez.",

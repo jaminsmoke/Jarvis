@@ -917,6 +917,7 @@ export const dict = {
   "settings.connectors.badge.connected": "منسلک",
   "settings.connectors.badge.notConnected": "منسلک نہیں",
   "settings.connectors.badge.disabled": "غیر فعال",
+  "settings.connectors.badge.comingSoon": "Coming soon",
   "settings.connectors.github.name": "GitHub",
   "settings.connectors.github.summary": "اپنے GitHub اکاؤنٹ کو جوڑیں تاکہ Jarvis آپ کی ریپوزٹریز کو پڑھ اور ان کا نظم کر سکے۔",
   "settings.connectors.github.detail": "اپنے GitHub اکاؤنٹ کو جوڑیں تاکہ Jarvis آپ کی ریپوزٹریز، ایشوز اور پل ریکویسٹس کے ساتھ براہ راست چیٹ سے کام کر سکے۔ آپ OAuth کے ذریعے اپنے GitHub اکاؤنٹ سے رسائی کی اجازت دیتے ہیں — Jarvis آپ کا پاس ورڈ کبھی نہیں دیکھتا۔",
