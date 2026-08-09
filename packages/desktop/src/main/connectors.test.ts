@@ -222,7 +222,8 @@ describe("githubPollDeviceFlow", () => {
     })
     const started = await connectors.githubStartDeviceFlow()
     const poll = await connectors.githubPollDeviceFlow(started.sessionId)
-    expect(poll).toEqual({ status: "error", message: "GitHub API error: 500" })
+    expect(poll.status).toBe("error")
+    expect(poll.status === "error" && poll.message).toContain("API error: 500")
     // The token must not be persisted when the user fetch fails.
     expect(store.get("connector.github.token.encrypted")).toBeUndefined()
   })
@@ -294,5 +295,89 @@ describe("githubDisconnect and cleanup", () => {
 
     expect(store.get("connector.github.token.encrypted")).toBeUndefined()
     expect(store.get("connector.github.user")).toBeUndefined()
+  })
+})
+
+// ── Google & Microsoft (config-driven connectors) ──
+
+describe("google connector", () => {
+  const GOOGLE_DEVICE_URL = "https://oauth2.googleapis.com/device/code"
+  const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+  const GOOGLE_USER_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+  test("completes the flow and stores the token under connector.google.*", async () => {
+    routeFetch({
+      [GOOGLE_DEVICE_URL]: () => jsonResponse({ device_code: "gd1", user_code: "ABCD-EFGH", interval: 5, expires_in: 900 }),
+      [GOOGLE_TOKEN_URL]: () => jsonResponse({ access_token: "gtok-123" }),
+      [GOOGLE_USER_URL]: () =>
+        jsonResponse({ email: "user@example.com", picture: "https://example.com/p.png", name: "User" }),
+    })
+
+    const started = await connectors.googleStartDeviceFlow()
+    expect(started.userCode).toBe("ABCD-EFGH")
+    expect(started.sessionId).toBeTypeOf("string")
+
+    const poll = await connectors.googlePollDeviceFlow(started.sessionId)
+    expect(poll).toEqual({
+      status: "success",
+      user: { login: "user@example.com", avatar: "https://example.com/p.png", name: "User" },
+    })
+    expect(store.get("connector.google.token.encrypted")).toBe(Buffer.from("enc:gtok-123").toString("base64"))
+    expect(store.get("connector.google.enabled")).toBe(true)
+  })
+
+  test("uses its own denied error code", async () => {
+    routeFetch({
+      [GOOGLE_DEVICE_URL]: () => jsonResponse({ device_code: "gd1", user_code: "ABCD-EFGH" }),
+      [GOOGLE_TOKEN_URL]: () => jsonResponse({ error: "access_denied" }),
+    })
+    const started = await connectors.googleStartDeviceFlow()
+    expect(await connectors.googlePollDeviceFlow(started.sessionId)).toEqual({ status: "denied" })
+  })
+})
+
+describe("microsoft connector", () => {
+  const MS_DEVICE_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode"
+  const MS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+  const MS_USER_URL = "https://graph.microsoft.com/v1.0/me"
+
+  test("completes the flow and stores the token under connector.microsoft.*", async () => {
+    routeFetch({
+      [MS_DEVICE_URL]: () => jsonResponse({ device_code: "md1", user_code: "WXYZ-1234", interval: 5, expires_in: 900 }),
+      [MS_TOKEN_URL]: () => jsonResponse({ access_token: "mtok-456" }),
+      [MS_USER_URL]: () =>
+        jsonResponse({ id: "obj-1", userPrincipalName: "user@contoso.com", displayName: "Contoso User" }),
+    })
+
+    const started = await connectors.microsoftStartDeviceFlow()
+    expect(started.userCode).toBe("WXYZ-1234")
+
+    const poll = await connectors.microsoftPollDeviceFlow(started.sessionId)
+    expect(poll).toEqual({
+      status: "success",
+      user: { login: "user@contoso.com", avatar: "", name: "Contoso User" },
+    })
+    expect(store.get("connector.microsoft.token.encrypted")).toBe(Buffer.from("enc:mtok-456").toString("base64"))
+    expect(store.get("connector.microsoft.enabled")).toBe(true)
+  })
+
+  test("uses authorization_declined as its denied error code", async () => {
+    routeFetch({
+      [MS_DEVICE_URL]: () => jsonResponse({ device_code: "md1", user_code: "WXYZ-1234" }),
+      [MS_TOKEN_URL]: () => jsonResponse({ error: "authorization_declined" }),
+    })
+    const started = await connectors.microsoftStartDeviceFlow()
+    expect(await connectors.microsoftPollDeviceFlow(started.sessionId)).toEqual({ status: "denied" })
+  })
+
+  test("disconnect clears the microsoft token", async () => {
+    store.set("connector.microsoft.token.encrypted", Buffer.from("enc:tok").toString("base64"))
+    store.set("connector.microsoft.user", JSON.stringify({ login: "user@contoso.com", avatar: "" }))
+    store.set("connector.microsoft.enabled", true)
+
+    const status = await connectors.microsoftDisconnect()
+
+    expect(status).toEqual({ enabled: true, connected: false, user: undefined })
+    expect(store.get("connector.microsoft.token.encrypted")).toBeUndefined()
   })
 })

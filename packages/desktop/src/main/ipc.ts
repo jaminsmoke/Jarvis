@@ -11,13 +11,7 @@ import { runDesktopMenuAction } from "./desktop-menu-actions"
 import { setForceFocus } from "./debug"
 import { assertAttachmentBudget, createPickedFileAuthorizations } from "./attachment-picker"
 import { getStore, removeStoreFileIfEmpty } from "./store"
-import {
-  githubDisconnect,
-  githubPollDeviceFlow,
-  githubSetEnabled,
-  githubStartDeviceFlow,
-  githubStatus,
-} from "./connectors"
+import { CONNECTOR_APIS } from "./connectors"
 import {
   getPinchZoomEnabled,
   getWindowID,
@@ -151,16 +145,20 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("draft-set", (_event, key: string, value: string) => drafts.set(key, value))
   ipcMain.handle("draft-delete", (_event, key: string) => drafts.set(key, null))
 
-  // GitHub connector (device flow, see ./connectors)
-  ipcMain.handle("connector-github-status", () => githubStatus())
-  ipcMain.handle("connector-github-set-enabled", (_event: IpcMainInvokeEvent, enabled: boolean) =>
-    githubSetEnabled(enabled),
-  )
-  ipcMain.handle("connector-github-device-start", () => githubStartDeviceFlow())
-  ipcMain.handle("connector-github-device-poll", (_event: IpcMainInvokeEvent, sessionId: string) =>
-    githubPollDeviceFlow(sessionId),
-  )
-  ipcMain.handle("connector-github-disconnect", () => githubDisconnect())
+  // Connectors (device flow, see ./connectors). Handlers are generated from
+  // the registry so adding a connector = adding a definition + preload slot.
+  for (const [id, api] of Object.entries(CONNECTOR_APIS)) {
+    ipcMain.handle(`connector-${id}-status`, () => api.getStatus())
+    ipcMain.handle(`connector-${id}-set-enabled`, (_event: IpcMainInvokeEvent, enabled: boolean) =>
+      api.setEnabled(enabled),
+    )
+    ipcMain.handle(`connector-${id}-device-start`, () => api.startDeviceFlow())
+    ipcMain.handle(`connector-${id}-device-poll`, (_event: IpcMainInvokeEvent, sessionId: string) =>
+      api.pollDeviceFlow(sessionId),
+    )
+    ipcMain.handle(`connector-${id}-disconnect`, () => api.disconnect())
+  }
+
   ipcMain.handle("draft-blob-put", (_event, data: ArrayBuffer) => drafts.putBlob(new Uint8Array(data)))
   ipcMain.handle("draft-blob-get", (_event, id: string) => {
     const data = drafts.getBlob(id)

@@ -68,3 +68,60 @@ describe("connector HttpApi", () => {
     }),
   )
 })
+
+describe("connector HttpApi — google & microsoft", () => {
+  it.live(
+    "reports disconnected status for google and microsoft when nothing is stored",
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ config: { formatter: false, lsp: false } })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      for (const id of ["google", "microsoft"]) {
+        const response = yield* Effect.promise(() =>
+          Promise.resolve(
+            app().request(`/connector/${id}/status`, {
+              headers: {
+                "x-opencode-directory": tmp.path,
+              },
+            }),
+          ),
+        )
+        expect(response.status).toBe(200)
+        expect(yield* Effect.promise(() => response.json())).toEqual({
+          enabled: false,
+          connected: false,
+        })
+      }
+    }),
+  )
+
+  it.live(
+    "disconnect is idempotent for google and microsoft",
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ config: { formatter: false, lsp: false } })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      for (const id of ["google", "microsoft"]) {
+        const response = yield* Effect.promise(() =>
+          Promise.resolve(
+            app().request(`/connector/${id}/disconnect`, {
+              method: "POST",
+              headers: {
+                "x-opencode-directory": tmp.path,
+              },
+            }),
+          ),
+        )
+        expect(response.status).toBe(200)
+        expect(yield* Effect.promise(() => response.json())).toEqual({
+          enabled: false,
+          connected: false,
+        })
+      }
+    }),
+  )
+})

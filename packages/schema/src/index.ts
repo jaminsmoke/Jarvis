@@ -1,4 +1,14 @@
 export { Agent } from "./agent"
+export { CONNECTORS, CONNECTOR_LIST, getConnector } from "./connector"
+export type {
+  ConnectorDefinition,
+  ConnectorId,
+  ConnectorPlatform,
+  ConnectorStatus,
+  ConnectorUser,
+  DeviceFlowPoll,
+  DeviceFlowStart,
+} from "./connector"
 export { Command } from "./command"
 export { Connection } from "./connection"
 export { Credential } from "./credential"

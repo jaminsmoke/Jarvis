@@ -18,7 +18,7 @@ import { registerIpcHandlers, sendDeepLinks, sendMenuCommand } from "./ipc"
 import { forwardInitializationFailure } from "./initialization"
 import { exportDebugLogs, initCrashReporter, initLogging, startNetLog, write as writeLog } from "./logging"
 import { createMenu } from "./menu"
-import { clearDeviceSessions, githubStartupHook } from "./connectors"
+import { clearDeviceSessions, connectorStartupHooks } from "./connectors"
 import {
   finishFirstLaunchOnboarding,
   initializeOldLayoutEligibility,
@@ -282,7 +282,7 @@ const main = Effect.gen(function* () {
     checkForUpdates: () => void showUpdaterDialog(updater, true),
     relaunch,
   }
-  githubStartupHook()
+  connectorStartupHooks()
 
   registerIpcHandlers({
     killSidecar: () => killSidecar(),

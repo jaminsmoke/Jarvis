@@ -243,10 +243,24 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     connector: {
       github: {
         getStatus: () => window.api.connector.github.getStatus(),
-        setEnabled: (enabled) => window.api.connector.github.setEnabled(enabled),
+        setEnabled: (enabled: boolean) => window.api.connector.github.setEnabled(enabled),
         startDeviceFlow: () => window.api.connector.github.startDeviceFlow(),
-        pollDeviceFlow: (sessionId) => window.api.connector.github.pollDeviceFlow(sessionId),
+        pollDeviceFlow: (sessionId: string) => window.api.connector.github.pollDeviceFlow(sessionId),
         disconnect: () => window.api.connector.github.disconnect(),
+      },
+      google: {
+        getStatus: () => window.api.connector.google.getStatus(),
+        setEnabled: (enabled: boolean) => window.api.connector.google.setEnabled(enabled),
+        startDeviceFlow: () => window.api.connector.google.startDeviceFlow(),
+        pollDeviceFlow: (sessionId: string) => window.api.connector.google.pollDeviceFlow(sessionId),
+        disconnect: () => window.api.connector.google.disconnect(),
+      },
+      microsoft: {
+        getStatus: () => window.api.connector.microsoft.getStatus(),
+        setEnabled: (enabled: boolean) => window.api.connector.microsoft.setEnabled(enabled),
+        startDeviceFlow: () => window.api.connector.microsoft.startDeviceFlow(),
+        pollDeviceFlow: (sessionId: string) => window.api.connector.microsoft.pollDeviceFlow(sessionId),
+        disconnect: () => window.api.connector.microsoft.disconnect(),
       },
     },
 

@@ -1,12 +1,14 @@
 /**
- * GitHub connector handlers — server-side device-flow proxy.
+ * Connector handlers — server-side device-flow proxy (config-driven).
  *
  * Mirrors the desktop main-process implementation (packages/desktop/src/main/
- * connectors.ts) so the web app can connect GitHub through the Jarvis server
- * without hitting GitHub's CORS-restricted device endpoints.
+ * connectors.ts) so the web app can connect external services through the
+ * Jarvis server without hitting providers' CORS-restricted device endpoints.
  *
- * The access token is stored via the server Credential store (SQLite), keyed
- * by integration "github", and is never returned to the browser.
+ * Every connector is defined in `@opencode-ai/app/connectors/registry`; this
+ * module is a factory that turns each definition into Effect handlers, storing
+ * the access token in the server Credential store (SQLite) keyed by the
+ * connector id. Tokens are never returned to the browser.
  *
  * Security note: unlike the desktop build (Electron safeStorage), the token is
  * stored as-is in the server SQLite Credential table. This matches how AI
@@ -19,6 +21,7 @@ import { Effect } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { Credential } from "@opencode-ai/core/credential"
 import { Integration } from "@opencode-ai/schema/integration"
+import { CONNECTORS, type ConnectorDefinition } from "@opencode-ai/schema/connector"
 import { InstanceHttpApi } from "../api"
 import {
   ConnectorApiError,
@@ -26,15 +29,6 @@ import {
   GitHubConnectorStatus,
   GitHubUser,
 } from "../groups/connector"
-
-const GITHUB_CLIENT_ID = "Ov23lih4N28LiBwVzv7X"
-const GITHUB_SCOPES = "repo,user"
-const GITHUB_API = "https://api.github.com"
-// Device-flow endpoints (RFC 8628). These do NOT allow CORS, which is why the
-// flow must run server-side instead of in the browser.
-const DEVICE_CODE_URL = "https://github.com/login/device/code"
-const TOKEN_URL = "https://github.com/login/oauth/access_token"
-const INTEGRATION_ID = "github" as Integration.ID
 
 type DeviceSession = {
   device_code: string
@@ -54,77 +48,76 @@ function pruneExpiredSessions() {
   }
 }
 
-const ghJsonHeaders = (token?: string): Record<string, string> => ({
-  Accept: "application/vnd.github+json",
-  "X-GitHub-Api-Version": "2022-11-28",
-  ...(token ? { Authorization: `Bearer ${token}` } : {}),
-})
-
 async function postForm(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
     body: new URLSearchParams(body),
   })
-  if (!res.ok) throw new Error(`GitHub endpoint error: ${res.status} ${res.statusText}`)
+  if (!res.ok) throw new Error(`${url} error: ${res.status} ${res.statusText}`)
   return (await res.json()) as Record<string, unknown>
 }
 
-async function fetchUser(token: string): Promise<GitHubUser> {
-  const res = await fetch(`${GITHUB_API}/user`, { headers: ghJsonHeaders(token) })
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`)
-  const data = (await res.json()) as { login: string; avatar_url: string; name?: string }
-  return { login: data.login, avatar: data.avatar_url, name: data.name }
+async function fetchUser(def: ConnectorDefinition, token: string): Promise<GitHubUser> {
+  const res = await fetch(`${def.apiBaseUrl}${def.userPath}`, { headers: def.apiHeaders(token) })
+  if (!res.ok) throw new Error(`${def.id[0].toUpperCase()}${def.id.slice(1)} API error: ${res.status}`)
+  return def.mapUser((await res.json()) as Record<string, unknown>) as GitHubUser
 }
 
-export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connector", (handlers) =>
-  Effect.gen(function* () {
-    const credential = yield* Credential.Service
+/** Build the five connector handlers for a definition. */
+function buildConnectorHandlers(def: ConnectorDefinition) {
+  const INTEGRATION_ID = def.id as Integration.ID
 
-    const toStatus = (stored: Credential.Info | undefined, enabled: boolean): GitHubConnectorStatus => {
-      if (!stored || stored.value.type !== "key") return { enabled, connected: false }
-      const metadata = stored.value.metadata ?? {}
-      const user = metadata.user as GitHubUser | undefined
-      return { enabled, connected: true, user }
-    }
-
-    const githubStatus = Effect.fn("ConnectorHttpApi.githubStatus")(function* () {
+  return {
+    status: Effect.fn(`ConnectorHttpApi.${def.id}Status`)(function* () {
+      const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const stored = current[0]
-      return toStatus(stored, stored?.value.type === "key" && stored.value.metadata?.enabled === true)
-    })
+      if (!stored || stored.value.type !== "key") return { enabled: false, connected: false }
+      const metadata = stored.value.metadata ?? {}
+      const user = metadata.user as GitHubUser | undefined
+      const enabled = metadata.enabled === true
+      return { enabled, connected: true, user }
+    }),
 
-    const setEnabled = Effect.fn("ConnectorHttpApi.githubSetEnabled")(function* (ctx: {
+    setEnabled: Effect.fn(`ConnectorHttpApi.${def.id}SetEnabled`)(function* (ctx: {
       payload: { enabled: boolean }
     }) {
+      const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const existing = current[0]
-      if (!existing || existing.value.type !== "key") return { enabled: ctx.payload.enabled, connected: false }
+      if (!existing || existing.value.type !== "key") {
+        return { enabled: ctx.payload.enabled, connected: false }
+      }
       yield* credential.update(existing.id, {
         value: {
           ...existing.value,
           metadata: { ...(existing.value.metadata ?? {}), enabled: ctx.payload.enabled },
         },
       })
-      return { enabled: ctx.payload.enabled, connected: true, user: existing.value.metadata?.user as GitHubUser | undefined }
-    })
+      return {
+        enabled: ctx.payload.enabled,
+        connected: true,
+        user: existing.value.metadata?.user as GitHubUser | undefined,
+      }
+    }),
 
-    const device = Effect.fn("ConnectorHttpApi.githubDevice")(function* () {
+    device: Effect.fn(`ConnectorHttpApi.${def.id}Device`)(function* () {
       pruneExpiredSessions()
       const data = yield* Effect.tryPromise({
-        try: () => postForm(DEVICE_CODE_URL, { client_id: GITHUB_CLIENT_ID, scope: GITHUB_SCOPES }),
+        try: () => postForm(def.deviceCodeUrl, { client_id: def.clientId, scope: def.scopes }),
         catch: (error) => new ConnectorApiError({ name: "BadRequest", data: { message: errorMessage(error) } }),
       })
 
       const device_code = String(data.device_code ?? "")
       const user_code = String(data.user_code ?? "")
-      const verification_uri = String(data.verification_uri ?? "https://github.com/login/device")
+      const verification_uri = String(data.verification_uri ?? "")
       const interval = Number(data.interval ?? 5)
       const expires_in = Number(data.expires_in ?? 900)
 
       if (!device_code || !user_code) {
         return yield* Effect.fail(
-          new ConnectorApiError({ name: "BadRequest", data: { message: `GitHub device flow failed: ${JSON.stringify(data)}` } }),
+          new ConnectorApiError({ name: "BadRequest", data: { message: `${def.id} device flow failed: ${JSON.stringify(data)}` } }),
         )
       }
 
@@ -136,9 +129,9 @@ export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connecto
       })
 
       return { sessionId, userCode: user_code, verificationUri: verification_uri, interval, expiresIn: expires_in } satisfies DeviceFlowStart
-    })
+    }),
 
-    const poll = Effect.fn("ConnectorHttpApi.githubPoll")(function* (ctx: {
+    poll: Effect.fn(`ConnectorHttpApi.${def.id}Poll`)(function* (ctx: {
       payload: { sessionId: string }
     }) {
       pruneExpiredSessions()
@@ -151,8 +144,8 @@ export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connecto
 
       const data = yield* Effect.tryPromise({
         try: () =>
-          postForm(TOKEN_URL, {
-            client_id: GITHUB_CLIENT_ID,
+          postForm(def.tokenUrl, {
+            client_id: def.clientId,
             device_code: session.device_code,
             grant_type: "urn:ietf:params:oauth:grant-type:device_code",
           }),
@@ -166,7 +159,7 @@ export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connecto
         deviceSessions.delete(ctx.payload.sessionId)
         return { status: "expired" } as const
       }
-      if (error === "access_denied") {
+      if (error === def.deniedErrorCode) {
         deviceSessions.delete(ctx.payload.sessionId)
         return { status: "denied" } as const
       }
@@ -181,30 +174,56 @@ export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connecto
       deviceSessions.delete(ctx.payload.sessionId)
 
       const user = yield* Effect.tryPromise({
-        try: () => fetchUser(accessToken),
+        try: () => fetchUser(def, accessToken),
         catch: (error) => new ConnectorApiError({ name: "BadRequest", data: { message: errorMessage(error) } }),
       })
 
+      const credential = yield* Credential.Service
       yield* credential.create({
         integrationID: INTEGRATION_ID,
         value: { type: "key", key: accessToken, metadata: { enabled: true, user } },
       })
 
       return { status: "success", user } as const
-    })
+    }),
 
-    const disconnect = Effect.fn("ConnectorHttpApi.githubDisconnect")(function* () {
+    disconnect: Effect.fn(`ConnectorHttpApi.${def.id}Disconnect`)(function* () {
+      const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       for (const entry of current) yield* credential.remove(entry.id)
       return { enabled: false, connected: false }
-    })
+    }),
+  }
+}
+
+export const connectorHandlers = HttpApiBuilder.group(InstanceHttpApi, "connector", (handlers) =>
+  Effect.gen(function* () {
+    // GitHub
+    const gh = buildConnectorHandlers(CONNECTORS.github)
+    // Google
+    const ggl = buildConnectorHandlers(CONNECTORS.google)
+    // Microsoft
+    const ms = buildConnectorHandlers(CONNECTORS.microsoft)
 
     return handlers
-      .handle("status", githubStatus)
-      .handle("setEnabled", setEnabled)
-      .handle("device", device)
-      .handle("poll", poll)
-      .handle("disconnect", disconnect)
+      // GitHub
+      .handle("githubStatus", gh.status)
+      .handle("githubSetEnabled", gh.setEnabled)
+      .handle("githubDevice", gh.device)
+      .handle("githubPoll", gh.poll)
+      .handle("githubDisconnect", gh.disconnect)
+      // Google
+      .handle("googleStatus", ggl.status)
+      .handle("googleSetEnabled", ggl.setEnabled)
+      .handle("googleDevice", ggl.device)
+      .handle("googlePoll", ggl.poll)
+      .handle("googleDisconnect", ggl.disconnect)
+      // Microsoft
+      .handle("microsoftStatus", ms.status)
+      .handle("microsoftSetEnabled", ms.setEnabled)
+      .handle("microsoftDevice", ms.device)
+      .handle("microsoftPoll", ms.poll)
+      .handle("microsoftDisconnect", ms.disconnect)
   }),
 )
 

@@ -6,7 +6,7 @@ import { ServerConnection } from "./server"
 import type { WslServersPlatform } from "../wsl/types"
 import type { UpdaterPlatform } from "../updater"
 import type { DraftStore } from "@/utils/draft-store"
-import type { ConnectorPlatform } from "../connectors/types"
+import type { ConnectorPlatformMap } from "../connectors/types"
 
 type PickerPaths = string | string[] | null
 type OpenDirectoryPickerOptions = { title?: string; multiple?: boolean }
@@ -124,7 +124,7 @@ type PlatformBase = {
   recordFatalRendererError?(error: FatalRendererErrorLog): Promise<void>
 
   /** External service connectors (desktop only) */
-  connector?: ConnectorPlatform
+  connector?: ConnectorPlatformMap
 }
 
 export type Platform = PlatformBase &

@@ -6,12 +6,15 @@ import { described } from "./metadata"
 const root = "/connector"
 
 /**
- * GitHub connector HTTP surface.
+ * Connector HTTP surface (one endpoint set per provider).
  *
- * The web app cannot talk to GitHub's device-flow endpoints directly (they
+ * The web app cannot talk to providers' device-flow endpoints directly (they
  * don't allow CORS), so the Jarvis server proxies the flow here. The access
  * token is stored in the server Credential store (like provider credentials)
  * and is never exposed to the browser.
+ *
+ * Endpoint ids are prefixed by provider (githubStatus, googleStatus, ...) so
+ * the HttpApiBuilder handlers can map 1:1 with `.handle(name, fn)`.
  */
 
 export const GitHubUser = Schema.Struct({
@@ -53,59 +56,107 @@ export class ConnectorApiError extends Schema.ErrorClass<ConnectorApiError>("Con
   }),
 }, { httpApiStatus: 400 }) {}
 
+type ConnectorId = "github" | "google" | "microsoft"
+
+const CONNECTOR_LABELS: Record<ConnectorId, string> = {
+  github: "GitHub",
+  google: "Google",
+  microsoft: "Microsoft",
+}
+
+/** Status endpoint for a provider. */
+function statusEndpoint<const Id extends ConnectorId>(id: Id) {
+  const name = CONNECTOR_LABELS[id]
+  return HttpApiEndpoint.get(`${id}Status`, `${root}/${id}/status`, {
+    success: described(GitHubConnectorStatus, `${name} connector status`),
+  }).annotateMerge(
+    OpenApi.annotations({
+      identifier: `connector.${id}.status`,
+      summary: `Get ${name} connector status`,
+      description: `Whether the ${name} connector is enabled and connected, and which user is linked.`,
+    }),
+  )
+}
+
+/** Set-enabled endpoint for a provider. */
+function setEnabledEndpoint<const Id extends ConnectorId>(id: Id) {
+  const name = CONNECTOR_LABELS[id]
+  return HttpApiEndpoint.post(`${id}SetEnabled`, `${root}/${id}/set-enabled`, {
+    payload: Schema.Struct({ enabled: Schema.Boolean }),
+    success: described(GitHubConnectorStatus, `${name} connector status`),
+  }).annotateMerge(
+    OpenApi.annotations({
+      identifier: `connector.${id}.setEnabled`,
+      summary: `Enable or disable the ${name} connector`,
+      description: "Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).",
+    }),
+  )
+}
+
+/** Device endpoint for a provider. */
+function deviceEndpoint<const Id extends ConnectorId>(id: Id) {
+  const name = CONNECTOR_LABELS[id]
+  return HttpApiEndpoint.post(`${id}Device`, `${root}/${id}/device`, {
+    success: described(DeviceFlowStart, "Device-flow authorization start"),
+    error: ConnectorApiError,
+  }).annotateMerge(
+    OpenApi.annotations({
+      identifier: `connector.${id}.device`,
+      summary: `Start a ${name} device-flow authorization`,
+      description: "Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.",
+    }),
+  )
+}
+
+/** Poll endpoint for a provider. */
+function pollEndpoint<const Id extends ConnectorId>(id: Id) {
+  const name = CONNECTOR_LABELS[id]
+  return HttpApiEndpoint.post(`${id}Poll`, `${root}/${id}/poll`, {
+    payload: Schema.Struct({ sessionId: Schema.String }),
+    success: described(DeviceFlowPoll, "Device-flow poll result"),
+    error: ConnectorApiError,
+  }).annotateMerge(
+    OpenApi.annotations({
+      identifier: `connector.${id}.poll`,
+      summary: `Poll the ${name} device-flow attempt`,
+      description: "Polls until the user authorizes. On success the server stores the token and returns the linked user.",
+    }),
+  )
+}
+
+/** Disconnect endpoint for a provider. */
+function disconnectEndpoint<const Id extends ConnectorId>(id: Id) {
+  const name = CONNECTOR_LABELS[id]
+  return HttpApiEndpoint.post(`${id}Disconnect`, `${root}/${id}/disconnect`, {
+    success: described(GitHubConnectorStatus, `${name} connector status`),
+  }).annotateMerge(
+    OpenApi.annotations({
+      identifier: `connector.${id}.disconnect`,
+      summary: `Disconnect the ${name} connector`,
+      description: "Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).",
+    }),
+  )
+}
+
 export const ConnectorApi = HttpApi.make("connector")
   .add(
     HttpApiGroup.make("connector")
       .add(
-        HttpApiEndpoint.get("status", `${root}/github/status`, {
-          success: described(GitHubConnectorStatus, "GitHub connector status"),
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "connector.github.status",
-            summary: "Get GitHub connector status",
-            description: "Whether the GitHub connector is enabled and connected, and which user is linked.",
-          }),
-        ),
-        HttpApiEndpoint.post("setEnabled", `${root}/github/set-enabled`, {
-          payload: Schema.Struct({ enabled: Schema.Boolean }),
-          success: described(GitHubConnectorStatus, "GitHub connector status"),
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "connector.github.setEnabled",
-            summary: "Enable or disable the GitHub connector",
-            description: "Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).",
-          }),
-        ),
-        HttpApiEndpoint.post("device", `${root}/github/device`, {
-          success: described(DeviceFlowStart, "Device-flow authorization start"),
-          error: ConnectorApiError,
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "connector.github.device",
-            summary: "Start a GitHub device-flow authorization",
-            description: "Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.",
-          }),
-        ),
-        HttpApiEndpoint.post("poll", `${root}/github/poll`, {
-          payload: Schema.Struct({ sessionId: Schema.String }),
-          success: described(DeviceFlowPoll, "Device-flow poll result"),
-          error: ConnectorApiError,
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "connector.github.poll",
-            summary: "Poll the GitHub device-flow attempt",
-            description: "Polls until the user authorizes. On success the server stores the token and returns the linked user.",
-          }),
-        ),
-        HttpApiEndpoint.post("disconnect", `${root}/github/disconnect`, {
-          success: described(GitHubConnectorStatus, "GitHub connector status"),
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "connector.github.disconnect",
-            summary: "Disconnect the GitHub connector",
-            description: "Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).",
-          }),
-        ),
+        statusEndpoint("github"),
+        setEnabledEndpoint("github"),
+        deviceEndpoint("github"),
+        pollEndpoint("github"),
+        disconnectEndpoint("github"),
+        statusEndpoint("google"),
+        setEnabledEndpoint("google"),
+        deviceEndpoint("google"),
+        pollEndpoint("google"),
+        disconnectEndpoint("google"),
+        statusEndpoint("microsoft"),
+        setEnabledEndpoint("microsoft"),
+        deviceEndpoint("microsoft"),
+        pollEndpoint("microsoft"),
+        disconnectEndpoint("microsoft"),
       )
       .annotateMerge(
         OpenApi.annotations({

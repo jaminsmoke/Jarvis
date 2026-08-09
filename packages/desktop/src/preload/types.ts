@@ -2,7 +2,12 @@ import type { DesktopMenuAction } from "@opencode-ai/app/desktop-menu"
 import type { WslServersPlatform } from "@opencode-ai/app/wsl/types"
 import type { UpdaterState } from "@opencode-ai/app/updater"
 import type { DesktopNativeBundle } from "@opencode-ai/app/i18n/desktop-native"
-import type { GitHubConnectorStatus, DeviceFlowStart, DeviceFlowPoll } from "@opencode-ai/app/connectors/types"
+import type {
+  GitHubConnectorStatus,
+  ConnectorPlatform,
+  DeviceFlowStart,
+  DeviceFlowPoll,
+} from "@opencode-ai/app/connectors/types"
 export type {
   WslDistroProbe,
   WslInstalledDistro,
@@ -123,5 +128,7 @@ export type ElectronAPI = {
       pollDeviceFlow: (sessionId: string) => Promise<DeviceFlowPoll>
       disconnect: () => Promise<GitHubConnectorStatus>
     }
+    google: ConnectorPlatform
+    microsoft: ConnectorPlatform
   }
 }

@@ -1,16 +1,22 @@
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js"
 import { usePlatform } from "@/context/platform"
 import { useServerSDK } from "@/context/server-sdk"
-import { createWebGitHubConnector } from "./web-github"
-import type { DeviceFlowStart, GitHubConnectorStatus, GitHubConnectorPlatform } from "./types"
+import { createWebConnector } from "./web-connector"
+import {
+  CONNECTORS,
+  type ConnectorDefinition,
+  type ConnectorPlatform,
+  type DeviceFlowStart,
+  type ConnectorStatus,
+} from "./registry"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * SolidJS controller for the GitHub connector.
+ * SolidJS controller for a connector (config-driven).
  *
- * Resolves a `GitHubConnectorPlatform` from the best available transport:
- * - Desktop: the platform bridge (`platform.connector.github`), backed by IPC
+ * Resolves a `ConnectorPlatform` from the best available transport:
+ * - Desktop: the platform bridge (`platform.connector[def.id]`), backed by IPC
  *   to the main process, which owns the device-flow polling and the encrypted
  *   token (safeStorage).
  * - Web: the Jarvis server connector endpoints, which proxy the device flow
@@ -19,18 +25,18 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
  * Returns null-ish behaviour gracefully when neither transport is available,
  * letting the UI show an "unavailable" state.
  */
-export function useGitHubConnector() {
+export function useConnector(def: ConnectorDefinition) {
   const platform = usePlatform()
   const serverSDK = useServerSDK()
 
   // Cache the resolved transport for the lifetime of this controller instance.
-  const github = createMemo<GitHubConnectorPlatform | undefined>(() => {
-    const platformConnector = platform.connector?.github
+  const api = createMemo<ConnectorPlatform | undefined>(() => {
+    const platformConnector = (platform.connector as Record<string, ConnectorPlatform> | undefined)?.[def.id]
     if (platformConnector) return platformConnector
     try {
       const sdk = serverSDK()
       const http = sdk.server.http
-      return createWebGitHubConnector({
+      return createWebConnector(def, {
         baseUrl: http.url,
         username: http.username,
         password: http.password,
@@ -42,7 +48,7 @@ export function useGitHubConnector() {
     }
   })
 
-  const [status, setStatus] = createSignal<GitHubConnectorStatus>({
+  const [status, setStatus] = createSignal<ConnectorStatus>({
     enabled: false,
     connected: false,
   })
@@ -52,9 +58,9 @@ export function useGitHubConnector() {
 
   // Load persisted status on mount.
   onMount(() => {
-    const api = github()
-    if (!api) return
-    void api
+    const connector = api()
+    if (!connector) return
+    void connector
       .getStatus()
       .then(setStatus)
       .catch(() => undefined)
@@ -69,10 +75,10 @@ export function useGitHubConnector() {
 
   /** Toggle the connector Switch. Disabling keeps the token (re-enabling is instant). */
   async function toggleEnabled(enabled: boolean) {
-    const api = github()
-    if (!api) return
+    const connector = api()
+    if (!connector) return
     try {
-      const next = await api.setEnabled(enabled)
+      const next = await connector.setEnabled(enabled)
       setStatus(next)
     } catch {
       setError("generic")
@@ -81,12 +87,12 @@ export function useGitHubConnector() {
 
   /** Start a device-flow authorization and begin polling until a terminal state. */
   async function startConnect() {
-    const api = github()
-    if (!api) return
+    const connector = api()
+    if (!connector) return
     setError(null)
     let started: DeviceFlowStart
     try {
-      started = await api.startDeviceFlow()
+      started = await connector.startDeviceFlow()
     } catch {
       setError("generic")
       return
@@ -96,8 +102,8 @@ export function useGitHubConnector() {
   }
 
   async function pollLoop(started: DeviceFlowStart) {
-    const api = github()
-    if (!api) return
+    const connector = api()
+    if (!connector) return
     setPolling(true)
     try {
       let interval = started.interval
@@ -107,7 +113,7 @@ export function useGitHubConnector() {
         if (!current || current.sessionId !== started.sessionId) return
         let result
         try {
-          result = await api.pollDeviceFlow(current.sessionId)
+          result = await connector.pollDeviceFlow(current.sessionId)
         } catch {
           setError("generic")
           setDevice(null)
@@ -142,10 +148,10 @@ export function useGitHubConnector() {
 
   /** Revoke the stored token and disconnect the account. */
   async function disconnect() {
-    const api = github()
-    if (!api) return
+    const connector = api()
+    if (!connector) return
     try {
-      const next = await api.disconnect()
+      const next = await connector.disconnect()
       setStatus(next)
       setError(null)
     } catch {
@@ -159,7 +165,7 @@ export function useGitHubConnector() {
     polling,
     error,
     /** Whether a transport exists (desktop bridge or web server connector). */
-    available: () => github() !== undefined,
+    available: () => api() !== undefined,
     toggleEnabled,
     startConnect,
     cancelConnect,
@@ -167,4 +173,10 @@ export function useGitHubConnector() {
   }
 }
 
+/** Convenience wrapper for the GitHub connector (backwards compatible). */
+export function useGitHubConnector() {
+  return useConnector(CONNECTORS.github)
+}
+
+export type ConnectorController = ReturnType<typeof useConnector>
 export type GitHubConnectorController = ReturnType<typeof useGitHubConnector>

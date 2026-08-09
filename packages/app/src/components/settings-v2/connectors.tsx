@@ -1,22 +1,29 @@
-import { Component, Show } from "solid-js"
+import { Component, For, Show } from "solid-js"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { useLanguage } from "@/context/language"
-import { useGitHubConnector } from "@/connectors/use-connector"
+import { useConnector, type ConnectorController } from "@/connectors/use-connector"
+import { CONNECTOR_LIST, type ConnectorDefinition } from "@/connectors/registry"
 import { ConnectorCard } from "./connector-card"
-import { ConnectorModalGitHub } from "./connector-modal-github"
+import { ConnectorModal } from "./connector-modal"
 import "./settings-v2.css"
 
 export const SettingsConnectorsV2: Component = () => {
   const language = useLanguage()
   const dialog = useDialog()
-  const connector = useGitHubConnector()
 
-  // Available on desktop (platform bridge) or on web (server connector proxy).
-  const available = () => connector.available()
+  // One controller per registered connector, created once for this view.
+  const controllers = new Map<string, ConnectorController>()
+  for (const def of CONNECTOR_LIST) controllers.set(def.id, useConnector(def))
 
-  const openModal = () => {
-    if (!available()) return
-    void dialog.show(() => <ConnectorModalGitHub controller={connector} />)
+  const get = (def: ConnectorDefinition): ConnectorController => controllers.get(def.id)!
+
+  // A transport is available on desktop (platform bridge) or web (server proxy).
+  const available = () => CONNECTOR_LIST.some((def) => get(def).available())
+
+  const openModal = (def: ConnectorDefinition) => {
+    const connector = get(def)
+    if (!connector.available()) return
+    void dialog.show(() => <ConnectorModal def={def} controller={connector} />)
   }
 
   return (
@@ -39,11 +46,19 @@ export const SettingsConnectorsV2: Component = () => {
           }
         >
           <div data-component="connector-list">
-            <ConnectorCard
-              status={connector.status()}
-              onToggle={(enabled) => void connector.toggleEnabled(enabled)}
-              onOpen={openModal}
-            />
+            <For each={CONNECTOR_LIST}>
+              {(def) => {
+                const connector = get(def)
+                return (
+                  <ConnectorCard
+                    def={def}
+                    status={connector.status()}
+                    onToggle={(enabled) => void connector.toggleEnabled(enabled)}
+                    onOpen={() => openModal(def)}
+                  />
+                )
+              }}
+            </For>
           </div>
         </Show>
       </div>

@@ -1,16 +1,21 @@
 import { Component, Show } from "solid-js"
 import { Icon } from "@opencode-ai/ui/icon"
+import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { Switch } from "@opencode-ai/ui/v2/switch-v2"
 import { useLanguage } from "@/context/language"
-import type { GitHubConnectorStatus } from "@/connectors/types"
+import type { ConnectorDefinition, ConnectorStatus } from "@/connectors/registry"
 import "./settings-v2.css"
 
 export const ConnectorCard: Component<{
-  status: GitHubConnectorStatus
+  def: ConnectorDefinition
+  status: ConnectorStatus
   onToggle: (enabled: boolean) => void
   onOpen: () => void
 }> = (props) => {
   const language = useLanguage()
+
+  const name = () => language.t(`${props.def.i18nPrefix}.name`)
+  const summary = () => language.t(`${props.def.i18nPrefix}.summary`)
 
   return (
     <div
@@ -27,12 +32,14 @@ export const ConnectorCard: Component<{
       }}
     >
       <div data-slot="connector-card-icon">
-        <Icon name="github" />
+        <Show when={props.def.providerIcon} fallback={<Icon name={props.def.icon as never} />}>
+          <ProviderIcon id={props.def.providerIcon!} width="22" height="22" aria-label={name()} />
+        </Show>
       </div>
 
       <div data-slot="connector-card-copy">
         <div data-slot="connector-card-title">
-          {language.t("settings.connectors.github.name")}
+          {name()}
           <span
             data-slot="connector-card-badge"
             classList={{
@@ -48,10 +55,12 @@ export const ConnectorCard: Component<{
           </span>
         </div>
         <div data-slot="connector-card-description">
-          <Show when={props.status.connected && props.status.user} fallback={language.t("settings.connectors.github.summary")}>
+          <Show when={props.status.connected && props.status.user} fallback={summary()}>
             {(user) => (
               <span data-slot="connector-card-user">
-                <img src={user().avatar} alt="" width={16} height={16} />
+                <Show when={user().avatar}>
+                  <img src={user().avatar} alt="" width={16} height={16} />
+                </Show>
                 @{user().login}
               </span>
             )}
@@ -67,10 +76,10 @@ export const ConnectorCard: Component<{
         <Switch
           checked={props.status.enabled}
           onChange={(checked) => props.onToggle(checked)}
-          aria-label={language.t("settings.connectors.github.name")}
+          aria-label={name()}
           hideLabel
         >
-          {language.t("settings.connectors.github.name")}
+          {name()}
         </Switch>
       </div>
     </div>
