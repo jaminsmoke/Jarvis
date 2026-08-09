@@ -337,8 +337,8 @@ describe("google connector", () => {
 })
 
 describe("microsoft connector", () => {
-  const MS_DEVICE_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode"
-  const MS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+  const MS_DEVICE_URL = "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode"
+  const MS_TOKEN_URL = "https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
   const MS_USER_URL = "https://graph.microsoft.com/v1.0/me"
 
   test("completes the flow and stores the token under connector.microsoft.*", async () => {
