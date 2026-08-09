@@ -19,7 +19,7 @@ Qué herramienta de GitHub usar en cada situación y cómo sortear sus limitacio
 
 ## Regla general
 
-1. **kanban CLI** para el flujo kanban: `bun kanban create`, `bun kanban body`
+1. **kanban CLI** para el flujo kanban completo: `bun kanban create`, `body`, `move`, `archive`, `convert-draft`, `create-field`, `add-option`, etc.
 2. **gh CLI** para el resto: `gh issue view`, `gh release list`, `gh secret set`, `gh label list`
 3. **GraphQL** para Projects V2 cuando la CLI no cubre la operación
 4. **REST** para operaciones no cubiertas: `gh api --method PATCH /repos/...`
@@ -30,13 +30,27 @@ Qué herramienta de GitHub usar en cada situación y cómo sortear sus limitacio
 El toolkit TypeScript en `jaminsmoke/jarvis-skills/packages/kanban-cli` es la herramienta principal para el flujo kanban. Carga automáticamente los IDs desde `.kanbanrc.json`.
 
 ```bash
-# Crear item con plantilla completa
+# Items — ciclo de vida completo
 bun kanban create --title "Titulo" --tipo Bug --area Desktop --priority Alta
+bun kanban list [--status X] [--tipo X] [--area X]
+bun kanban body <itemId>                       # leer body
+bun kanban body <itemId> --set "..."           # reemplazar body
+bun kanban body <itemId> --append "Plan" "..." # añadir sección
+bun kanban move <itemId> [--after <afterId>]   # mover posición
+bun kanban archive <itemId>                    # archivar (soft delete)
+bun kanban unarchive <itemId>                  # desarchivar
+bun kanban clear-field <itemId> --field-id "..."  # limpiar campo
+bun kanban convert-draft <itemId>              # DraftIssue → Issue
 
-# Leer/editar body
-bun kanban body <itemId>                    # leer
-bun kanban body <itemId> --set "..."        # reemplazar
-bun kanban body <itemId> --append "Plan" "..."  # añadir sección
+# Campos — gestión completa
+bun kanban create-field --name "..." --data-type SINGLE_SELECT --options "A:BLUE,B:GREEN"
+bun kanban update-field --field-id "..." --options "A:BLUE,B:GREEN,C:PURPLE"
+bun kanban add-option --field-id "..." --name "..." --color BLUE --desc "..."
+bun kanban delete-field --field-id "..."
+
+# Config
+bun kanban config generate --project PVT_...   # regenerar .kanbanrc.json
+bun kanban config validate                     # validar contra el Project
 ```
 
 Si la CLI no está disponible (otro proyecto sin `.kanbanrc.json`), usar las mutaciones GraphQL documentadas en `@jarvis-github-kanban`.
@@ -98,7 +112,7 @@ gh issue edit 4 --repo jaminsmoke/Jarvis --title "nuevo titulo" --add-label secu
 ### Releases
 ```bash
 gh release list --repo jaminsmoke/Jarvis
-gh release view v0.1.4 --repo jaminsmoke/Jarvis --json tagName,isLatest
+gh release view v0.1.0 --repo jaminsmoke/Jarvis --json tagName,isLatest
 ```
 
 ### Secrets
@@ -120,9 +134,29 @@ gh run view 31208918303 --repo jaminsmoke/Jarvis --log --job 92947871728
 
 ## Limitaciones conocidas
 
-1. **Crear opciones en campo SingleSelect**: NO hay API. Solo UI.
-2. **Crear campos nuevos en Project**: NO hay API. Solo UI.
+1. **Añadir opciones a SingleSelect**: usar `updateProjectV2Field` (GraphQL) con `singleSelectOptions` pasando TODAS las opciones existentes + la nueva (reemplazo completo). Los IDs de opciones cambian → re-query post-mutación.
+2. **Crear campos nuevos**: usar `createProjectV2Field` (GraphQL) o `gh project field-create`. Soporta TEXT, SINGLE_SELECT (con opciones iniciales), MULTI_SELECT, NUMBER, DATE, ITERATION.
 3. **Fine-grained PAT**: no accede a user projects (solo org projects).
 4. **GITHUB_TOKEN**: no accede a Projects V2.
 5. **groupBy del Kanban**: no hay API — se configura en la UI.
-6. **addProjectV2DraftIssue**: no devuelve el item ID (API limitation). La CLI usa retry para encontrarlo por título.
+6. **updateProjectV2Field con singleSelectOptions**: hace reemplazo completo de opciones. Pasar TODAS (existentes + nuevas). Re-consultar IDs después.
+
+## Mutaciones GraphQL disponibles (Projects V2)
+
+Todas confirmadas contra la API real (2026-08):
+- `addProjectV2DraftIssue` → retorna `projectItem { id }` ✅
+- `createProjectV2Field` → `dataType`: TEXT, SINGLE_SELECT, MULTI_SELECT, NUMBER, DATE, ITERATION ✅
+- `updateProjectV2Field` → `singleSelectOptions`, `multiSelectOptions`, `name` ✅
+- `deleteProjectV2Field` ✅
+- `convertProjectV2DraftIssueItemToIssue` → requiere `itemId` + `repositoryId` ✅
+- `archiveProjectV2Item` / `unarchiveProjectV2Item` ✅
+- `clearProjectV2ItemFieldValue` ✅
+- `updateProjectV2ItemPosition` ✅
+- `copyProjectV2` ✅
+- `updateProjectV2` (title, public, readme, shortDescription) ✅
+
+### SingleSelect option colors
+GRAY, BLUE, GREEN, YELLOW, ORANGE, RED, PINK, PURPLE
+
+### ProjectV2SingleSelectFieldOptionInput
+`{ name!, color!, description! }` — id es opcional (solo para referenciar opciones existentes)
