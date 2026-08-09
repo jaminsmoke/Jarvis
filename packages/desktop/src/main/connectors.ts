@@ -187,7 +187,11 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
       device_code: session.device_code,
       grant_type: "urn:ietf:params:oauth:grant-type:device_code",
     }
-    if (def.clientSecret) body.client_secret = def.clientSecret
+    // Google TV-type clients require client_secret at the token endpoint.
+    // The secret is read at runtime (not from the static definition) because
+    // it cannot be committed to the public repo — set GOOGLE_CLIENT_SECRET.
+    const secret = def.clientSecret ?? (def.id === "google" ? process.env.GOOGLE_CLIENT_SECRET : undefined)
+    if (secret) body.client_secret = secret
     const data = await postForm(def.tokenUrl, body)
 
     const error = data.error

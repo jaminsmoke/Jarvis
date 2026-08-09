@@ -20,11 +20,18 @@ export const ConnectorCard: Component<{
   return (
     <div
       data-component="connector-card"
-      classList={{ "is-enabled": props.status.enabled, "is-connected": props.status.connected }}
-      onClick={props.onOpen}
+      classList={{
+        "is-enabled": props.status.enabled,
+        "is-connected": props.status.connected,
+        "is-coming-soon": props.def.disabled === true,
+      }}
+      onClick={() => {
+        if (!props.def.disabled) props.onOpen()
+      }}
       role="button"
-      tabindex={0}
+      tabindex={props.def.disabled ? -1 : 0}
       onKeyDown={(e) => {
+        if (props.def.disabled) return
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault()
           props.onOpen()
@@ -45,13 +52,16 @@ export const ConnectorCard: Component<{
             classList={{
               "is-connected": props.status.connected,
               "is-disabled": !props.status.enabled,
+              "is-coming-soon": props.def.disabled === true,
             }}
           >
-            {props.status.connected
-              ? language.t("settings.connectors.badge.connected")
-              : props.status.enabled
-                ? language.t("settings.connectors.badge.notConnected")
-                : language.t("settings.connectors.badge.disabled")}
+            {props.def.disabled
+              ? language.t("settings.connectors.badge.comingSoon")
+              : props.status.connected
+                ? language.t("settings.connectors.badge.connected")
+                : props.status.enabled
+                  ? language.t("settings.connectors.badge.notConnected")
+                  : language.t("settings.connectors.badge.disabled")}
           </span>
         </div>
         <div data-slot="connector-card-description">
@@ -75,7 +85,10 @@ export const ConnectorCard: Component<{
       >
         <Switch
           checked={props.status.enabled}
-          onChange={(checked) => props.onToggle(checked)}
+          onChange={(checked) => {
+            if (!props.def.disabled) props.onToggle(checked)
+          }}
+          disabled={props.def.disabled === true}
           aria-label={name()}
           hideLabel
         >

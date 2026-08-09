@@ -162,7 +162,10 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
         device_code: session.device_code,
         grant_type: "urn:ietf:params:oauth:grant-type:device_code",
       }
-      if (def.clientSecret) tokenBody.client_secret = def.clientSecret
+      // Google TV-type clients require client_secret at the token endpoint.
+      // Read at runtime — the secret cannot be committed to the public repo.
+      const secret = def.clientSecret ?? (def.id === "google" ? process.env.GOOGLE_CLIENT_SECRET : undefined)
+      if (secret) tokenBody.client_secret = secret
       const data = yield* Effect.tryPromise({
         try: () => tokenPostForm(def.tokenUrl, tokenBody),
         catch: (error) => new ConnectorApiError({ name: "BadRequest", data: { message: errorMessage(error) } }),

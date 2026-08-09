@@ -76,8 +76,17 @@ export type ConnectorDefinition = {
   clientId: string
   /** Optional OAuth client secret. Required by Google TV-type clients for the
    * token endpoint (not the device-code endpoint). Leave undefined for pure
-   * public clients (GitHub, Microsoft). */
+   * public clients (GitHub, Microsoft).
+   *
+   * For Google this MUST be read at runtime (process.env.GOOGLE_CLIENT_SECRET)
+   * rather than baked into the static definition, because the secret cannot be
+   * committed to the public repo and has no sensible default. */
   clientSecret?: string
+  /** When true the connector is shown but not interactive — the card renders a
+   * "Coming soon" badge and the switch is disabled. Use for connectors whose
+   * OAuth app / scopes are registered but the end-to-end flow is not yet
+   * validated. */
+  disabled?: boolean
   /** Space-separated OAuth scopes requested at authorization time. */
   scopes: string
   /** RFC 8628 device authorization endpoint (no CORS — runs in main/server). */
@@ -146,7 +155,8 @@ const github: ConnectorDefinition = {
 const google: ConnectorDefinition = {
   id: "google",
   clientId: "878214801933-dcbah6u5mb6gpnvmlotto6pv1nk1pc5p.apps.googleusercontent.com",
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  // clientSecret read at runtime from GOOGLE_CLIENT_SECRET env var — see
+  // connectors.ts (desktop) and connector.ts (server handler).
   scopes: "openid email profile",
   deviceCodeUrl: "https://oauth2.googleapis.com/device/code",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -179,6 +189,7 @@ const google: ConnectorDefinition = {
  */
 const microsoft: ConnectorDefinition = {
   id: "microsoft",
+  disabled: true,
   clientId: "28c5172c-5ad7-4cd4-8cf4-6a5c004ac3c3",
   scopes: "offline_access https://graph.microsoft.com/User.Read https://graph.microsoft.com/Files.Read.All",
   deviceCodeUrl: "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode",
