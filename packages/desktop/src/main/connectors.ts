@@ -96,6 +96,11 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   startupHook(): void
 } {
   const { id, storePrefix } = def
+
+  // Google requires GOOGLE_CLIENT_SECRET at build time. If missing,
+  // the connector is permanently disabled (shown as "Coming soon").
+  const googleSecretMissing = id === "google" && !process.env.GOOGLE_CLIENT_SECRET
+
   const KEY_ENABLED = `${storePrefix}.enabled`
   const KEY_TOKEN = `${storePrefix}.token.encrypted` // base64(safeStorage.encryptString(token))
   const KEY_USER = `${storePrefix}.user` // JSON of public ConnectorUser (not a secret)
@@ -137,6 +142,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   }
 
   async function status(): Promise<ConnectorStatus> {
+    if (googleSecretMissing) return { enabled: false, connected: false }
     const enabled = Boolean(store().get(KEY_ENABLED))
     const token = getStoredToken()
     const user = getStoredUser()
@@ -144,6 +150,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   }
 
   async function setEnabled(enabled: boolean): Promise<ConnectorStatus> {
+    if (googleSecretMissing) return status()
     store().set(KEY_ENABLED, enabled)
     return status()
   }

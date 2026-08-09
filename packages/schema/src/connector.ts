@@ -148,9 +148,10 @@ const github: ConnectorDefinition = {
 
 /**
  * Google (Drive/Docs) — device flow supported.
- * Requires an OAuth client of type "Desktop app" in Google Cloud Console
+ * Requires an OAuth client of type "TVs and Limited Input devices" in Google Cloud Console
  * (APIs & Services → Credentials → Create credentials → OAuth client ID).
- * Public client: no client secret needed for device flow.
+ * TV-type clients require a client_secret at the token endpoint — injected via
+ * GOOGLE_CLIENT_SECRET at build time (never committed to the repo).
  */
 const google: ConnectorDefinition = {
   id: "google",
