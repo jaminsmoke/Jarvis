@@ -737,7 +737,9 @@ def cmd_audit():
         if completed_exact and not parse_exact(completed_exact): problems.append('COMPLETADO_EXACTO_INVALIDO')
         if completed_exact and date_from_exact(completed_exact) != completed: problems.append('COMPLETADO_FECHA_INCOHERENTE')
         if st != 'Changelog' and (completed or completed_exact): problems.append('FINALIZACION_FUERA_DE_CHANGELOG')
-        classification_scope = st != 'Changelog' or ver == 'v0.1.4'
+        # v0.1.0 items were migrated from Jarvis Old without Tipo/Área — exempt them.
+        # Newer versions (v0.1.1+) must be classified.
+        classification_scope = st != 'Changelog' or ver == 'v0.1.0'
         if classification_scope and tipo == '-': problems.append('Tipo')
         if classification_scope and area == '-': problems.append('Área principal')
         if classification_scope and tipo != '-' and tipo not in TYPE_LABELS: problems.append(f'TIPO_DESCONOCIDO:{tipo}')
