@@ -16,7 +16,7 @@ import { app, safeStorage } from "electron"
 import type { DeviceFlowPoll, DeviceFlowStart, GitHubConnectorStatus, GitHubUser } from "@opencode-ai/app/connectors/types"
 import { getStore } from "./store"
 
-export const GITHUB_CLIENT_ID = "Ov23lifxOge1pqQvTnyB"
+export const GITHUB_CLIENT_ID = "Ov23lih4N28LiBwVzv7X"
 const GITHUB_SCOPES = "repo,user"
 const GITHUB_API = "https://api.github.com"
 

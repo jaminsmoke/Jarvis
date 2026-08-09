@@ -27,7 +27,7 @@ import {
   GitHubUser,
 } from "../groups/connector"
 
-const GITHUB_CLIENT_ID = "Ov23lifxOge1pqQvTnyB"
+const GITHUB_CLIENT_ID = "Ov23lih4N28LiBwVzv7X"
 const GITHUB_SCOPES = "repo,user"
 const GITHUB_API = "https://api.github.com"
 // Device-flow endpoints (RFC 8628). These do NOT allow CORS, which is why the
