@@ -4,6 +4,12 @@
 - The default branch in this repo is `dev`.
 - Local `main` ref may not exist; use `dev` or `origin/dev` for diffs.
 
+## CI Workflows
+
+- Activos: `ci-quality` (typecheck + tests + lint + changelog), `release-desktop` (tags `v*`), `pages-build-deployment` (GitHub Pages desde `docs/`).
+- Los workflows heredados del fork de OpenCode están **desactivados** a la espera de adaptarlos a Jarvis uno a uno cuando aporten valor (Issue #29). No reactivar ninguno sin: runner estándar (`ubuntu-latest`, nunca `blacksmith-*`), sin secrets/vars `OPENCODE_*` no definidos, y sin referencias a `anomalyco/opencode` o `sst/opencode`.
+- Especial cuidado: `close-issues.ts` operaba sobre `anomalyco/opencode` — reactivarlo solo si se apunta a `jaminsmoke/Jarvis`.
+
 ## Branch Names
 
 Use a short branch name of at most three words, separated by hyphens. Do not use slashes or type prefixes such as `feat/` or `fix/`.
