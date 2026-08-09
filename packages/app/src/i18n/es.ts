@@ -83,8 +83,8 @@ export const dict = {
   "desktop.wsl.error.installDistro": "No se pudo instalar la distribución: {{distro}}",
   "desktop.wsl.error.installOpencode": "No se pudo instalar Jarvis",
   "desktop.wsl.error.alreadyAdded": "Ya se ha añadido {{distro}}",
-  "desktop.wsl.error.opencodeMissing": "opencode no está instalado en esta distribución",
-  "desktop.wsl.error.opencodeCannotRun": "opencode está instalado, pero no se pudo ejecutar",
+  "desktop.wsl.error.opencodeMissing": "Jarvis no está instalado en esta distribución",
+  "desktop.wsl.error.opencodeCannotRun": "Jarvis está instalado, pero no se pudo ejecutar",
   "desktop.wsl.error.opencodeNotInstalled": "Jarvis no está instalado en {{distro}}",
   "desktop.wsl.error.updateVersion":
     "La actualización de Jarvis finalizó, pero {{distro}} sigue indicando {{installed}}; se esperaba {{expected}}",
@@ -863,6 +863,7 @@ export const dict = {
 
   "titlebar.update": "Actualizar",
   "titlebar.updateVersion": "Actualizar {{version}}",
+  "titlebar.toggleDebugTools": "Alternar herramientas de depuración",
 
   "common.closeTab": "Cerrar pestaña",
   "common.dismiss": "Descartar",
@@ -1217,6 +1218,7 @@ export const dict = {
   "dialog.releaseNotes.action.next": "Siguiente",
   "dialog.releaseNotes.action.hideFuture": "No mostrar esto en el futuro",
   "dialog.releaseNotes.media.alt": "Vista previa de la versión",
+  "dialog.usageExceeded.dontShowAgain": "No mostrar de nuevo",
   "toast.project.reloadFailed.title": "Error al recargar {{project}}",
   "error.server.invalidConfiguration": "Configuración inválida",
   "common.moreCountSuffix": " (+{{count}} más)",
