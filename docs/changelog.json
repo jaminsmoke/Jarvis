@@ -1,6 +1,20 @@
 {
   "releases": [
     {
+      "tag": "v0.1.1",
+      "highlights": [
+        {
+          "source": "desktop",
+          "items": [
+            {
+              "title": "Portal documental Jarvis: activar GitHub Pages y publicar docs",
+              "description": "Publicar la documentacion web de Jarvis en GitHub Pages. La sospecha inicial: el portal era la pagina de Jarvis-old y podria no estar creada en el repo actual."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "tag": "v0.1.0",
       "highlights": [
         {
