@@ -1,10 +1,10 @@
 [Desktop Entry]
-Name=OpenCode
-Exec=/opt/OpenCode/ai.opencode.desktop %U
+Name=Jarvis
+Exec=/opt/Jarvis/ai.jarvis.desktop %U
 Terminal=false
 Type=Application
-Icon=ai.opencode.desktop
-StartupWMClass=ai.opencode.desktop
+Icon=ai.jarvis.desktop
+StartupWMClass=ai.jarvis.desktop
 NoDisplay=true
 Comment=Open source AI coding agent
 Categories=Development;
