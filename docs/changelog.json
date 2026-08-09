@@ -7,6 +7,10 @@
           "source": "desktop",
           "items": [
             {
+              "title": "Releases: alinear plataformas, artefactos, notas y documentación (v0.1.0)",
+              "description": "Jarvis necesita su primera release oficial (v0.1.0). No hay releases previos. release-desktop.yml activo y corregido. CI-quality pasa. 11 issues en changelog."
+            },
+            {
               "title": "Icono y naming Jarvis en escritorio + menú ayuda",
               "description": "Se reemplazó el icono de OpenCode por el de Jarvis en la app de escritorio (packages/desktop/icons/), en el menú Ayuda, y en los metadatos (package.json, tauri.conf.json)."
             },
