@@ -40,7 +40,7 @@ MADRID = ZoneInfo("Europe/Madrid")
 
 STATUS = {
     "Detectado": "ef2fdff4", "Debate": "ddac116a", "Roadmap": "0ca99905",
-    "Ejecutando": "79f82a08", "Verficando": "741a25fa", "Changelog": "f9a1286b",
+    "Ejecutando": "79f82a08", "Verificando": "741a25fa", "Changelog": "f9a1286b",
 }
 
 VERSION = {
