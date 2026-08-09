@@ -151,6 +151,9 @@ function manifest() {
 
 function serverLogRoots() {
   const xdgData = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share")
+  // The server/engine binary writes its logs to `opencode/log` (hardcoded in
+  // packages/opencode/src/cli/cmd/run/trace.ts). These are read-only paths for
+  // debug log export - keep "opencode", it is the engine data dir, not branding.
   return [...new Set([join(xdgData, "opencode", "log"), join(app.getPath("userData"), "opencode", "log")])]
 }
 

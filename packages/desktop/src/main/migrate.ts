@@ -21,7 +21,10 @@ function tauriDir(id: string) {
   }
 }
 
-// The Tauri app identifier changes between dev/beta/prod builds.
+// The Tauri app identifier of the PREVIOUS OpenCode Desktop install (legacy migration source).
+// Keep pointing at `ai.opencode.desktop.*`: this is what lets us find and migrate the
+// user's Tauri-era `.dat` files. Do NOT rename to `ai.jarvis.desktop.*` - that would
+// break migration (the app itself already uses `ai.jarvis.desktop.*` via APP_IDS).
 const TAURI_APP_IDS: Record<string, string> = {
   dev: "ai.opencode.desktop.dev",
   beta: "ai.opencode.desktop.beta",
