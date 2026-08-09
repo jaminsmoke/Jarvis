@@ -35,6 +35,10 @@ export default defineConfig({
   main: {
     define: {
       "import.meta.env.JARVIS_CHANNEL": JSON.stringify(channel),
+      // Google TV-type OAuth client requires a client_secret at the token
+      // endpoint. This is set in CI (GitHub Actions secret) and baked into
+      // the binary at compile time — never committed to the repo.
+      "process.env.GOOGLE_CLIENT_SECRET": JSON.stringify(process.env.GOOGLE_CLIENT_SECRET ?? ""),
     },
     build: {
       rollupOptions: {
