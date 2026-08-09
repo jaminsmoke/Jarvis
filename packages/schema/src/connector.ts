@@ -74,6 +74,10 @@ export type ConnectorDefinition = {
   id: ConnectorId
   /** Public OAuth client id. Device flow client ids are public by design. */
   clientId: string
+  /** Optional OAuth client secret. Required by Google TV-type clients for the
+   * token endpoint (not the device-code endpoint). Leave undefined for pure
+   * public clients (GitHub, Microsoft). */
+  clientSecret?: string
   /** Space-separated OAuth scopes requested at authorization time. */
   scopes: string
   /** RFC 8628 device authorization endpoint (no CORS — runs in main/server). */
@@ -141,8 +145,9 @@ const github: ConnectorDefinition = {
  */
 const google: ConnectorDefinition = {
   id: "google",
-  clientId: "REPLACE_WITH_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
-  scopes: "https://www.googleapis.com/auth/drive.readonly",
+  clientId: "878214801933-dcbah6u5mb6gpnvmlotto6pv1nk1pc5p.apps.googleusercontent.com",
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  scopes: "openid email profile",
   deviceCodeUrl: "https://oauth2.googleapis.com/device/code",
   tokenUrl: "https://oauth2.googleapis.com/token",
   apiBaseUrl: "https://www.googleapis.com",
@@ -174,10 +179,10 @@ const google: ConnectorDefinition = {
  */
 const microsoft: ConnectorDefinition = {
   id: "microsoft",
-  clientId: "REPLACE_WITH_MICROSOFT_ENTRA_CLIENT_ID",
-  scopes: "offline_access User.Read Files.Read.All",
-  deviceCodeUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",
-  tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+  clientId: "28c5172c-5ad7-4cd4-8cf4-6a5c004ac3c3",
+  scopes: "offline_access https://graph.microsoft.com/User.Read https://graph.microsoft.com/Files.Read.All",
+  deviceCodeUrl: "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode",
+  tokenUrl: "https://login.microsoftonline.com/organizations/oauth2/v2.0/token",
   apiBaseUrl: "https://graph.microsoft.com/v1.0",
   userPath: "/me",
   deniedErrorCode: "authorization_declined",

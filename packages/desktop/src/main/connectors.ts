@@ -182,11 +182,13 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
       return { status: "expired" }
     }
 
-    const data = await postForm(def.tokenUrl, {
+    const body: Record<string, string> = {
       client_id: def.clientId,
       device_code: session.device_code,
       grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-    })
+    }
+    if (def.clientSecret) body.client_secret = def.clientSecret
+    const data = await postForm(def.tokenUrl, body)
 
     const error = data.error
     if (error === "authorization_pending") return { status: "pending" }

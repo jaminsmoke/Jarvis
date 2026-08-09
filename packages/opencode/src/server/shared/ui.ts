@@ -1,9 +1,20 @@
 import { FSUtil } from "@opencode-ai/core/fs-util"
-import { Effect } from "effect"
-import { HttpClient, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
+import { Effect, Stream } from "effect"
+import { HttpBody, HttpClient, HttpClientRequest, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { createHash } from "node:crypto"
+import { ProxyUtil } from "../proxy-util"
 
 let embeddedUIPromise: Promise<Record<string, string> | null> | undefined
+
+/**
+ * Upstream URL that serves the Jarvis web UI when the embedded bundle isn't
+ * available.  In production the bundle is compiled into the binary; in dev
+ * (`bun dev serve` / `bun dev web`) we proxy to the Vite dev server started
+ * from `packages/app` which is the same UI the desktop shell renders.
+ */
+export const UI_UPSTREAM = new URL(
+  process.env.JARVIS_APP_DEV_URL ?? "http://localhost:3000",
+)
 
 export const csp = (hash = "") =>
   `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'${hash ? ` 'sha256-${hash}'` : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; media-src 'self' data:; connect-src * data: blob:`
@@ -16,6 +27,26 @@ export function themePreloadHash(body: string) {
 export function cspForHtml(body: string) {
   const match = themePreloadHash(body)
   return csp(match ? createHash("sha256").update(match[2]).digest("base64") : "")
+}
+
+function requestBody(request: HttpServerRequest.HttpServerRequest) {
+  if (request.method === "GET" || request.method === "HEAD") return HttpBody.empty
+  const len = request.headers["content-length"]
+  return HttpBody.stream(request.stream, request.headers["content-type"], len === undefined ? undefined : Number(len))
+}
+
+function proxyResponseHeaders(headers: Record<string, string>) {
+  const result = new Headers(headers)
+  // FetchHttpClient exposes decoded response bodies, so forwarding upstream
+  // transfer metadata makes browsers decode already-decoded assets again.
+  result.delete("content-encoding")
+  result.delete("content-length")
+  result.delete("transfer-encoding")
+  return result
+}
+
+export function upstreamURL(path: string) {
+  return new URL(path, UI_UPSTREAM).toString()
 }
 
 export function embeddedUI(disableEmbeddedWebUi: boolean) {
@@ -52,50 +83,6 @@ export function serveEmbeddedUIEffect(
   )
 }
 
-// Jarvis never proxies to the upstream OpenCode UI. When no embedded UI bundle
-// is available (dev builds), serve a branded notice pointing to the local app
-// instead of whatever the upstream serves.
-const JARVIS_NOTICE = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jarvis</title>
-<style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: radial-gradient(1200px 600px at 50% -10%, #1c2733 0%, #0b0f14 60%);
-    color: #e6edf3;
-  }
-  main { max-width: 600px; padding: 3rem 1.5rem; text-align: center; }
-  .logo { margin: 0; font-size: 2.4rem; font-weight: 800; letter-spacing: 0.08em; }
-  .logo b { color: #58a6ff; }
-  .tag { color: #8b949e; margin: 0.25rem 0 0; }
-  h1 { font-size: 1.1rem; margin: 2rem 0 0.5rem; }
-  p { color: #9da7b3; line-height: 1.7; margin: 0; }
-  code { background: #161b22; border: 1px solid #2d333b; border-radius: 6px; padding: 0.15rem 0.45rem; color: #7ee787; }
-</style>
-</head>
-<body>
-<main>
-  <p class="logo">Jar<b>vis</b></p>
-  <p class="tag">API server</p>
-  <h1>Web interface</h1>
-  <p>
-    The Jarvis web UI is not served from this server. Run the app with
-    <code>bun dev:web</code> from <code>packages/app</code>, or install the
-    desktop app.
-  </p>
-</main>
-</body>
-</html>`
-
 export function serveUIEffect(
   request: HttpServerRequest.HttpServerRequest,
   services: { fs: FSUtil.Interface; client: HttpClient.HttpClient; disableEmbeddedWebUi: boolean },
@@ -106,9 +93,27 @@ export function serveUIEffect(
 
     if (embeddedWebUI) return yield* serveEmbeddedUIEffect(path, services.fs, embeddedWebUI)
 
-    return HttpServerResponse.text(JARVIS_NOTICE, {
-      status: 200,
-      headers: { "content-type": "text/html; charset=utf-8", "content-security-policy": DEFAULT_CSP },
+    // Dev mode: proxy to the Vite dev server (same UI as the desktop).
+    // Uses the proven OpenCode proxy infra (HttpClient + ProxyUtil) —
+    // the only change from upstream is the target URL (JARVIS_APP_DEV_URL).
+    const response = yield* services.client.execute(
+      HttpClientRequest.make(request.method)(upstreamURL(path), {
+        headers: ProxyUtil.headers(request.headers, { host: UI_UPSTREAM.host }),
+        body: requestBody(request),
+      }),
+    )
+    const headers = proxyResponseHeaders(response.headers)
+
+    if (response.headers["content-type"]?.includes("text/html")) {
+      const body = yield* response.text
+      headers.set("Content-Security-Policy", cspForHtml(body))
+      return HttpServerResponse.text(body, { status: response.status, headers })
+    }
+
+    headers.set("Content-Security-Policy", csp())
+    return HttpServerResponse.stream(response.stream.pipe(Stream.catchCause(() => Stream.empty)), {
+      status: response.status,
+      headers,
     })
   })
 }

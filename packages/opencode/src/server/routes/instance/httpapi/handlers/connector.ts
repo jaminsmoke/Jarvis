@@ -58,6 +58,18 @@ async function postForm(url: string, body: Record<string, string>): Promise<Reco
   return (await res.json()) as Record<string, unknown>
 }
 
+/** Like postForm but never throws on HTTP errors — the token endpoint returns
+ *  authorization_pending / slow_down with HTTP 400, and those are expected
+ *  intermediate states, not transport errors. Always parse the JSON body. */
+async function tokenPostForm(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: new URLSearchParams(body),
+  })
+  return (await res.json()) as Record<string, unknown>
+}
+
 async function fetchUser(def: ConnectorDefinition, token: string): Promise<GitHubUser> {
   const res = await fetch(`${def.apiBaseUrl}${def.userPath}`, { headers: def.apiHeaders(token) })
   if (!res.ok) throw new Error(`${def.id[0].toUpperCase()}${def.id.slice(1)} API error: ${res.status}`)
@@ -111,7 +123,7 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
 
       const device_code = String(data.device_code ?? "")
       const user_code = String(data.user_code ?? "")
-      const verification_uri = String(data.verification_uri ?? "")
+      const verification_uri = String(data.verification_uri ?? data.verification_url ?? "")
       const interval = Number(data.interval ?? 5)
       const expires_in = Number(data.expires_in ?? 900)
 
@@ -142,13 +154,17 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
         return { status: "expired" } as const
       }
 
+      // Use tokenPostForm (does NOT throw on non-OK) because the token
+      // endpoint returns 400 with authorization_pending / slow_down — those
+      // are expected intermediate states, not errors.
+      const tokenBody: Record<string, string> = {
+        client_id: def.clientId,
+        device_code: session.device_code,
+        grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+      }
+      if (def.clientSecret) tokenBody.client_secret = def.clientSecret
       const data = yield* Effect.tryPromise({
-        try: () =>
-          postForm(def.tokenUrl, {
-            client_id: def.clientId,
-            device_code: session.device_code,
-            grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-          }),
+        try: () => tokenPostForm(def.tokenUrl, tokenBody),
         catch: (error) => new ConnectorApiError({ name: "BadRequest", data: { message: errorMessage(error) } }),
       })
 
