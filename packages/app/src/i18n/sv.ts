@@ -205,7 +205,7 @@ export const dict = {
   "dialog.model.manage": "Hantera modeller",
   "dialog.model.manage.description": "Anpassa vilka modeller som visas i modellväljaren.",
   "dialog.model.manage.provider.toggle": "Växla alla {{provider}}-modeller",
-  "dialog.model.unpaid.freeModels.title": "Gratis modeller tillhandahålls av OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Gratis modeller tillhandahålls av Jarvis",
   "dialog.model.unpaid.addMore.title": "Lägg till fler modeller från populära leverantörer",
   "dialog.model.unpaid.viewMoreProviders": "Se fler än 70 leverantörer",
   "dialog.provider.viewAll": "Visa fler leverantörer",
@@ -224,7 +224,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API-nyckel",
   "provider.connect.apiKey.required": "API-nyckel krävs",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen ger dig tillgång till en utvald uppsättning pålitliga optimerade modeller för kodningsagenter.",
+    "Jarvis Zen ger dig tillgång till en utvald uppsättning pålitliga optimerade modeller för kodningsagenter.",
   "provider.connect.opencodeZen.line2":
     "Med en enda API-nyckel får du tillgång till modeller som Claude, GPT, Gemini, GLM och mer.",
   "provider.connect.opencodeZen.visit.prefix": "Besök ",

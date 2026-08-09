@@ -211,7 +211,7 @@ export const dict = {
   "dialog.model.manage": "Quản lý mô hình",
   "dialog.model.manage.description": "Tùy chỉnh mô hình nào xuất hiện trong bộ chọn mô hình.",
   "dialog.model.manage.provider.toggle": "Bật/tắt tất cả mô hình {{provider}}",
-  "dialog.model.unpaid.freeModels.title": "Các mô hình miễn phí do OpenCode cung cấp",
+  "dialog.model.unpaid.freeModels.title": "Các mô hình miễn phí do Jarvis cung cấp",
   "dialog.model.unpaid.addMore.title": "Thêm nhiều mô hình từ các nhà cung cấp phổ biến",
   "dialog.model.unpaid.viewMoreProviders": "Xem hơn 70 nhà cung cấp khác",
   "dialog.provider.viewAll": "Hiển thị thêm nhà cung cấp",
@@ -230,7 +230,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "khóa API",
   "provider.connect.apiKey.required": "Cần có khóa API",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen cho phép bạn truy cập một bộ mô hình được tuyển chọn, tối ưu hóa và đáng tin cậy dành cho tác nhân lập trình.",
+    "Jarvis Zen cho phép bạn truy cập một bộ mô hình được tuyển chọn, tối ưu hóa và đáng tin cậy dành cho tác nhân lập trình.",
   "provider.connect.opencodeZen.line2":
     "Chỉ với một khóa API, bạn sẽ có quyền truy cập vào các mô hình như Claude, GPT, Gemini, GLM và hơn thế nữa.",
   "provider.connect.opencodeZen.visit.prefix": "Truy cập ",

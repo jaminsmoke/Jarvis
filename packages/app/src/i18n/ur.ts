@@ -212,7 +212,7 @@ export const dict = {
   "dialog.model.manage": "ماڈلز کا نظم کریں۔",
   "dialog.model.manage.description": "اپنی مرضی کے مطابق بنائیں کہ کون سے ماڈل ماڈل سلیکٹر میں نظر آتے ہیں۔",
   "dialog.model.manage.provider.toggle": "تمام {{provider}} ماڈلز کو ٹوگل کریں۔",
-  "dialog.model.unpaid.freeModels.title": "OpenCode کے ذریعہ فراہم کردہ مفت ماڈلز",
+  "dialog.model.unpaid.freeModels.title": "Jarvis کے ذریعہ فراہم کردہ مفت ماڈلز",
   "dialog.model.unpaid.addMore.title": "مشہور فراہم کنندگان سے مزید ماڈلز شامل کریں۔",
   "dialog.model.unpaid.viewMoreProviders": "مزید 70 فراہم کنندگان دیکھیں",
   "dialog.provider.viewAll": "مزید فراہم کنندگان دکھائیں۔",
@@ -231,7 +231,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API کلید",
   "provider.connect.apiKey.required": "API کلید درکار ہے۔",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen آپ کو کوڈنگ ایجنٹوں کے لیے قابل اعتماد اصلاح شدہ ماڈلز کے کیوریٹڈ سیٹ تک رسائی فراہم کرتا ہے۔",
+    "Jarvis Zen آپ کو کوڈنگ ایجنٹوں کے لیے قابل اعتماد اصلاح شدہ ماڈلز کے کیوریٹڈ سیٹ تک رسائی فراہم کرتا ہے۔",
   "provider.connect.opencodeZen.line2":
     "ایک واحد API کلید کے ساتھ آپ Claude، GPT، Gemini، GLM اور مزید ماڈلز تک رسائی حاصل کریں گے۔",
   "provider.connect.opencodeZen.visit.prefix": "ملاحظہ کریں ",

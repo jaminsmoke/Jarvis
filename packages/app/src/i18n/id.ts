@@ -222,7 +222,7 @@ export const dict = {
   "dialog.model.manage.description": "Sesuaikan model mana yang muncul di pemilih model.",
   "dialog.model.manage.provider.toggle": "Alihkan semua model {{provider}}",
 
-  "dialog.model.unpaid.freeModels.title": "Model gratis disediakan oleh OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Model gratis disediakan oleh Jarvis",
   "dialog.model.unpaid.addMore.title": "Tambahkan lebih banyak model dari penyedia populer",
   "dialog.model.unpaid.viewMoreProviders": "Lihat 70+ penyedia lainnya",
 
@@ -243,7 +243,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "Kunci API",
   "provider.connect.apiKey.required": "Kunci API diperlukan",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen memberi Anda akses ke serangkaian model andal yang dioptimalkan untuk agen pengodean.",
+    "Jarvis Zen memberi Anda akses ke serangkaian model andal yang dioptimalkan untuk agen pengodean.",
   "provider.connect.opencodeZen.line2":
     "Dengan satu kunci API, Anda akan mendapatkan akses ke model seperti Claude, GPT, Gemini, GLM dan lainnya.",
   "provider.connect.opencodeZen.visit.prefix": "Kunjungi ",

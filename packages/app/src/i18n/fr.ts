@@ -212,7 +212,7 @@ export const dict = {
   "dialog.model.manage": "Gérer les modèles",
   "dialog.model.manage.description": "Personnalisez les modèles qui apparaissent dans le sélecteur.",
   "dialog.model.manage.provider.toggle": "Activer ou désactiver tous les modèles {{provider}}",
-  "dialog.model.unpaid.freeModels.title": "Modèles gratuits fournis par OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Modèles gratuits fournis par Jarvis",
   "dialog.model.unpaid.addMore.title": "Ajouter plus de modèles de fournisseurs populaires",
   "dialog.model.unpaid.viewMoreProviders": "Voir plus de 70 autres fournisseurs",
   "dialog.provider.viewAll": "Voir plus de fournisseurs",
@@ -231,7 +231,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "Clé API",
   "provider.connect.apiKey.required": "La clé API est requise",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen vous donne accès à un ensemble sélectionné de modèles fiables et optimisés pour les agents de codage.",
+    "Jarvis Zen vous donne accès à un ensemble sélectionné de modèles fiables et optimisés pour les agents de codage.",
   "provider.connect.opencodeZen.line2":
     "Avec une seule clé API, vous aurez accès à des modèles tels que Claude, GPT, Gemini, GLM et plus encore.",
   "provider.connect.opencodeZen.visit.prefix": "Visitez ",

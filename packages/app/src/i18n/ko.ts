@@ -107,7 +107,7 @@ export const dict = {
   "dialog.model.manage": "모델 관리",
   "dialog.model.manage.description": "모델 선택기에 표시할 모델 사용자 지정",
   "dialog.model.manage.provider.toggle": "모든 {{provider}} 모델 토글",
-  "dialog.model.unpaid.freeModels.title": "OpenCode에서 제공하는 무료 모델",
+  "dialog.model.unpaid.freeModels.title": "Jarvis에서 제공하는 무료 모델",
   "dialog.model.unpaid.addMore.title": "인기 공급자의 모델 추가",
   "dialog.model.unpaid.viewMoreProviders": "70개 이상의 공급자 더 보기",
   "dialog.provider.viewAll": "더 많은 공급자 보기",
@@ -126,7 +126,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API 키",
   "provider.connect.apiKey.required": "API 키가 필요합니다",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen은 코딩 에이전트를 위해 최적화된 신뢰할 수 있는 엄선된 모델에 대한 액세스를 제공합니다.",
+    "Jarvis Zen은 코딩 에이전트를 위해 최적화된 신뢰할 수 있는 엄선된 모델에 대한 액세스를 제공합니다.",
   "provider.connect.opencodeZen.line2": "단일 API 키로 Claude, GPT, Gemini, GLM 등 다양한 모델에 액세스할 수 있습니다.",
   "provider.connect.opencodeZen.visit.prefix": "다음 ",
   "provider.connect.opencodeZen.visit.link": "opencode.ai/zen",

@@ -246,7 +246,7 @@ export const dict = {
   "dialog.model.manage": "管理模型",
   "dialog.model.manage.description": "自定义模型选择器中显示的模型。",
   "dialog.model.manage.provider.toggle": "切换所有 {{provider}} 模型",
-  "dialog.model.unpaid.freeModels.title": "OpenCode 提供的免费模型",
+  "dialog.model.unpaid.freeModels.title": "Jarvis 提供的免费模型",
   "dialog.model.unpaid.addMore.title": "从热门提供商添加更多模型",
   "dialog.model.unpaid.viewMoreProviders": "查看另外 70 多个提供商",
 
@@ -266,7 +266,7 @@ export const dict = {
   "provider.connect.apiKey.label": "{{provider}} API 密钥",
   "provider.connect.apiKey.placeholder": "API 密钥",
   "provider.connect.apiKey.required": "API 密钥为必填项",
-  "provider.connect.opencodeZen.line1": "OpenCode Zen 为你提供一组精选的可靠优化模型，用于代码智能体。",
+  "provider.connect.opencodeZen.line1": "Jarvis Zen 为你提供一组精选的可靠优化模型，用于代码智能体。",
   "provider.connect.opencodeZen.line2": "只需一个 API 密钥，你就能使用 Claude、GPT、Gemini、GLM 等模型。",
   "provider.connect.opencodeZen.visit.prefix": "访问 ",
   "provider.connect.opencodeZen.visit.link": "opencode.ai/zen",

@@ -222,7 +222,7 @@ export const dict = {
   "dialog.model.manage.description": "Prilagodi koji se modeli prikazuju u izborniku modela.",
   "dialog.model.manage.provider.toggle": "Uključi/isključi sve {{provider}} modele",
 
-  "dialog.model.unpaid.freeModels.title": "Besplatni modeli koje obezbjeđuje OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Besplatni modeli koje obezbjeđuje Jarvis",
   "dialog.model.unpaid.addMore.title": "Dodaj još modela od popularnih provajdera",
   "dialog.model.unpaid.viewMoreProviders": "Pogledaj još više od 70 provajdera",
 
@@ -243,7 +243,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API ključ",
   "provider.connect.apiKey.required": "API ključ je obavezan",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen ti daje pristup kuriranom skupu pouzdanih, optimizovanih modela za coding agente.",
+    "Jarvis Zen ti daje pristup kuriranom skupu pouzdanih, optimizovanih modela za coding agente.",
   "provider.connect.opencodeZen.line2":
     "Sa jednim API ključem dobijaš pristup modelima kao što su Claude, GPT, Gemini, GLM i drugi.",
   "provider.connect.opencodeZen.visit.prefix": "Posjeti ",

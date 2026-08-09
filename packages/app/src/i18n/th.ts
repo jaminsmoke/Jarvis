@@ -220,7 +220,7 @@ export const dict = {
   "dialog.model.manage.description": "ปรับแต่งโมเดลที่จะปรากฏในตัวเลือกโมเดล",
   "dialog.model.manage.provider.toggle": "สลับโมเดลทั้งหมดของ {{provider}}",
 
-  "dialog.model.unpaid.freeModels.title": "โมเดลฟรีที่จัดหาให้โดย OpenCode",
+  "dialog.model.unpaid.freeModels.title": "โมเดลฟรีที่จัดหาให้โดย Jarvis",
   "dialog.model.unpaid.addMore.title": "เพิ่มโมเดลเพิ่มเติมจากผู้ให้บริการยอดนิยม",
   "dialog.model.unpaid.viewMoreProviders": "ดูผู้ให้บริการเพิ่มเติมกว่า 70 ราย",
 
@@ -241,7 +241,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "คีย์ API",
   "provider.connect.apiKey.required": "ต้องใช้คีย์ API",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen ให้คุณเข้าถึงชุดโมเดลที่เชื่อถือได้และปรับแต่งแล้วสำหรับเอเจนต์การเขียนโค้ด",
+    "Jarvis Zen ให้คุณเข้าถึงชุดโมเดลที่เชื่อถือได้และปรับแต่งแล้วสำหรับเอเจนต์การเขียนโค้ด",
   "provider.connect.opencodeZen.line2":
     "ด้วยคีย์ API เดียวคุณจะได้รับการเข้าถึงโมเดล เช่น Claude, GPT, Gemini, GLM และอื่น ๆ",
   "provider.connect.opencodeZen.visit.prefix": "เยี่ยมชม ",

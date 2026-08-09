@@ -220,7 +220,7 @@ export const dict = {
   "dialog.model.manage.description": "Tilpass hvilke modeller som vises i modellvelgeren.",
   "dialog.model.manage.provider.toggle": "Veksle alle {{provider}}-modeller",
 
-  "dialog.model.unpaid.freeModels.title": "Gratis modeller levert av OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Gratis modeller levert av Jarvis",
   "dialog.model.unpaid.addMore.title": "Legg til flere modeller fra populære leverandører",
   "dialog.model.unpaid.viewMoreProviders": "Se over 70 flere leverandører",
 
@@ -241,7 +241,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API-nøkkel",
   "provider.connect.apiKey.required": "API-nøkkel er påkrevd",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen gir deg tilgang til et utvalg av pålitelige optimaliserte modeller for kodeagenter.",
+    "Jarvis Zen gir deg tilgang til et utvalg av pålitelige optimaliserte modeller for kodeagenter.",
   "provider.connect.opencodeZen.line2":
     "Med én enkelt API-nøkkel får du tilgang til modeller som Claude, GPT, Gemini, GLM og flere.",
   "provider.connect.opencodeZen.visit.prefix": "Besøk ",

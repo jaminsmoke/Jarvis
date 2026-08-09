@@ -212,7 +212,7 @@ export const dict = {
   "dialog.model.manage": "Gerenciar modelos",
   "dialog.model.manage.description": "Personalizar quais modelos aparecem no seletor de modelos.",
   "dialog.model.manage.provider.toggle": "Alternar todos os modelos {{provider}}",
-  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos fornecidos pelo OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Modelos gratuitos fornecidos pelo Jarvis",
   "dialog.model.unpaid.addMore.title": "Adicionar mais modelos de provedores populares",
   "dialog.model.unpaid.viewMoreProviders": "Ver mais de 70 provedores",
   "dialog.provider.viewAll": "Ver mais provedores",
@@ -231,7 +231,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "Chave de API",
   "provider.connect.apiKey.required": "A chave de API é obrigatória",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen oferece acesso a um conjunto selecionado de modelos confiáveis otimizados para agentes de código.",
+    "Jarvis Zen oferece acesso a um conjunto selecionado de modelos confiáveis otimizados para agentes de código.",
   "provider.connect.opencodeZen.line2":
     "Com uma única chave de API você terá acesso a modelos como Claude, GPT, Gemini, GLM e mais.",
   "provider.connect.opencodeZen.visit.prefix": "Visite ",

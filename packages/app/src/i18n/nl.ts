@@ -204,7 +204,7 @@ export const dict = {
   "dialog.model.manage": "Beheer modellen",
   "dialog.model.manage.description": "Pas aan welke modellen in de modelkiezer verschijnen.",
   "dialog.model.manage.provider.toggle": "Alle {{provider}}-modellen in- of uitschakelen",
-  "dialog.model.unpaid.freeModels.title": "Gratis modellen geleverd door OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Gratis modellen geleverd door Jarvis",
   "dialog.model.unpaid.addMore.title": "Voeg meer modellen toe van populaire aanbieders",
   "dialog.model.unpaid.viewMoreProviders": "Bekijk nog 70+ aanbieders",
   "dialog.provider.viewAll": "Toon meer aanbieders",
@@ -223,7 +223,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API-sleutel",
   "provider.connect.apiKey.required": "API-sleutel is vereist",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen geeft je toegang tot een samengestelde set betrouwbare, geoptimaliseerde modellen voor codeeragenten.",
+    "Jarvis Zen geeft je toegang tot een samengestelde set betrouwbare, geoptimaliseerde modellen voor codeeragenten.",
   "provider.connect.opencodeZen.line2":
     "Met één API-sleutel krijg je toegang tot modellen zoals Claude, GPT, Gemini, GLM en meer.",
   "provider.connect.opencodeZen.visit.prefix": "Ga naar ",

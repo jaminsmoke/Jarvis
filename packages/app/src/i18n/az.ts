@@ -206,7 +206,7 @@ export const dict = {
   "dialog.model.manage": "Modelləri idarə et",
   "dialog.model.manage.description": "Model seçicisində hansı modellərin görünəcəyini fərdiləşdir.",
   "dialog.model.manage.provider.toggle": "Bütün {{provider}} modellərini aç/bağla",
-  "dialog.model.unpaid.freeModels.title": "OpenCode tərəfindən təqdim olunan pulsuz modellər",
+  "dialog.model.unpaid.freeModels.title": "Jarvis tərəfindən təqdim olunan pulsuz modellər",
   "dialog.model.unpaid.addMore.title": "Populyar provayderlərdən daha çox model əlavə edin",
   "dialog.model.unpaid.viewMoreProviders": "Daha 70+ provayderə baxın",
   "dialog.provider.viewAll": "Daha çox provayder göstər",
@@ -225,7 +225,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API açarı",
   "provider.connect.apiKey.required": "API açarı tələb olunur",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen sizə kodlaşdırma agentləri üçün etibarlı optimallaşdırılmış seçilmiş modellər dəstinə giriş verir.",
+    "Jarvis Zen sizə kodlaşdırma agentləri üçün etibarlı optimallaşdırılmış seçilmiş modellər dəstinə giriş verir.",
   "provider.connect.opencodeZen.line2":
     "Tək bir API açarı ilə Claude, GPT, Gemini, GLM və daha çox modellərə giriş əldə edəcəksiniz.",
   "provider.connect.opencodeZen.visit.prefix": "",

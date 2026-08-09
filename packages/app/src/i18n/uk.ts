@@ -222,7 +222,7 @@ export const dict = {
   "dialog.model.manage.description": "Налаштуйте, які моделі відображатимуться у виборі моделей.",
   "dialog.model.manage.provider.toggle": "Перемкнути всі моделі {{provider}}",
 
-  "dialog.model.unpaid.freeModels.title": "Безкоштовні моделі від OpenCode",
+  "dialog.model.unpaid.freeModels.title": "Безкоштовні моделі від Jarvis",
   "dialog.model.unpaid.addMore.title": "Додати більше моделей від популярних провайдерів",
   "dialog.model.unpaid.viewMoreProviders": "Переглянути ще понад 70 провайдерів",
 
@@ -243,7 +243,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "Ключ API",
   "provider.connect.apiKey.required": "Ключ API обов'язковий",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen надає доступ до відібраного набору надійних оптимізованих моделей для агентів кодування.",
+    "Jarvis Zen надає доступ до відібраного набору надійних оптимізованих моделей для агентів кодування.",
   "provider.connect.opencodeZen.line2":
     "З одним ключем API ви отримаєте доступ до таких моделей, як Claude, GPT, Gemini, GLM та інших.",
   "provider.connect.opencodeZen.visit.prefix": "Відвідайте ",

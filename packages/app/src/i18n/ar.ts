@@ -213,7 +213,7 @@ export const dict = {
   "dialog.model.manage": "إدارة النماذج",
   "dialog.model.manage.description": "تخصيص النماذج التي تظهر في محدد النماذج.",
   "dialog.model.manage.provider.toggle": "تبديل جميع نماذج {{provider}}",
-  "dialog.model.unpaid.freeModels.title": "نماذج مجانية مقدمة من OpenCode",
+  "dialog.model.unpaid.freeModels.title": "نماذج مجانية مقدمة من Jarvis",
   "dialog.model.unpaid.addMore.title": "إضافة المزيد من النماذج من موفرين مشهورين",
   "dialog.model.unpaid.viewMoreProviders": "عرض أكثر من 70 موفرًا إضافيًا",
   "dialog.provider.viewAll": "عرض المزيد من الموفرين",
@@ -232,7 +232,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "مفتاح API",
   "provider.connect.apiKey.required": "مفتاح API مطلوب",
   "provider.connect.opencodeZen.line1":
-    "يمنحك OpenCode Zen الوصول إلى مجموعة مختارة من النماذج الموثوقة والمحسنة لوكلاء البرمجة.",
+    "يمنحك Jarvis Zen الوصول إلى مجموعة مختارة من النماذج الموثوقة والمحسنة لوكلاء البرمجة.",
   "provider.connect.opencodeZen.line2":
     "باستخدام مفتاح API واحد، ستحصل على إمكانية الوصول إلى نماذج مثل Claude و GPT و Gemini و GLM والمزيد.",
   "provider.connect.opencodeZen.visit.prefix": "قم بزيارة ",

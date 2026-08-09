@@ -111,7 +111,7 @@ export const dict = {
   "dialog.model.manage": "Hallitse malleja",
   "dialog.model.manage.description": "Mukauta, mitkä mallit näkyvät mallivalitsimessa.",
   "dialog.model.manage.provider.toggle": "Ota kaikki palveluntarjoajan {{provider}} mallit käyttöön tai pois käytöstä",
-  "dialog.model.unpaid.freeModels.title": "OpenCoden tarjoamat ilmaiset mallit",
+  "dialog.model.unpaid.freeModels.title": "Jarvisin tarjoamat ilmaiset mallit",
   "dialog.model.unpaid.addMore.title": "Lisää malleja suosituilta palveluntarjoajilta",
   "dialog.model.unpaid.viewMoreProviders": "Katso yli 70 muuta palveluntarjoajaa",
   "dialog.provider.viewAll": "Näytä lisää palveluntarjoajia",
@@ -130,7 +130,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API-avain",
   "provider.connect.apiKey.required": "API-avain vaaditaan",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen antaa sinulle pääsyn kuratoituun joukkoon luotettavia optimoituja malleja koodausagenteille.",
+    "Jarvis Zen antaa sinulle pääsyn kuratoituun joukkoon luotettavia optimoituja malleja koodausagenteille.",
   "provider.connect.opencodeZen.line2":
     "Yhdellä API-avaimella pääset käyttämään malleja, kuten Claude, GPT, Gemini, GLM ja paljon muuta.",
   "provider.connect.opencodeZen.visit.prefix": "Avaa ",

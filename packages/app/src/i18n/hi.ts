@@ -211,7 +211,7 @@ export const dict = {
   "dialog.model.manage": "मॉडल प्रबंधित करें",
   "dialog.model.manage.description": "तय करें कि मॉडल चयनकर्ता में कौन-से मॉडल दिखाई दें।",
   "dialog.model.manage.provider.toggle": "सभी {{provider}} मॉडल को टॉगल करें",
-  "dialog.model.unpaid.freeModels.title": "OpenCode द्वारा उपलब्ध निःशुल्क मॉडल",
+  "dialog.model.unpaid.freeModels.title": "Jarvis द्वारा उपलब्ध निःशुल्क मॉडल",
   "dialog.model.unpaid.addMore.title": "लोकप्रिय प्रोवाइडर से अधिक मॉडल जोड़ें",
   "dialog.model.unpaid.viewMoreProviders": "70+ अधिक प्रोवाइडर देखें",
   "dialog.provider.viewAll": "और प्रोवाइडर दिखाएँ",
@@ -230,7 +230,7 @@ export const dict = {
   "provider.connect.apiKey.placeholder": "API कुंजी",
   "provider.connect.apiKey.required": "API कुंजी आवश्यक है",
   "provider.connect.opencodeZen.line1":
-    "OpenCode Zen आपको कोडिंग एजेंटों के लिए चुने गए विश्वसनीय, अनुकूलित मॉडलों तक पहुँच देता है।",
+    "Jarvis Zen आपको कोडिंग एजेंटों के लिए चुने गए विश्वसनीय, अनुकूलित मॉडलों तक पहुँच देता है।",
   "provider.connect.opencodeZen.line2": "एक API कुंजी से आपको Claude, GPT, Gemini, GLM जैसे कई मॉडलों तक पहुँच मिलेगी।",
   "provider.connect.opencodeZen.visit.prefix": "यहाँ जाएँ: ",
   "provider.connect.opencodeZen.visit.link": "opencode.ai/zen",
