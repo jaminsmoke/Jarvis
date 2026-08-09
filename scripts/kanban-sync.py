@@ -272,7 +272,7 @@ def date_from_exact(value):
 
 ACTIVE_STATUSES = {"Detectado", "Debate", "Roadmap", "Ejecutando", "Verificando"}
 
-KNOWN_VERSIONS = {"v0.1.0", "v0.1.1", "v0.1.2", "v0.1.3", "v0.1.4", "v0.1.5", "Sin asignar"}
+KNOWN_VERSIONS = {"v0.1.0", "v0.1.1", "v0.1.2", "v0.1.3", "v0.1.4", "v0.1.5", "v0.2.0", "Sin asignar"}
 
 
 def latest_release_tag():

@@ -6,9 +6,31 @@
 
 ## CI Workflows
 
-- Activos: `ci-quality` (typecheck + tests + lint + changelog), `release-desktop` (tags `v*`), `pages-build-deployment` (GitHub Pages desde `docs/`).
-- Los workflows heredados del fork de OpenCode están **desactivados** a la espera de adaptarlos a Jarvis uno a uno cuando aporten valor (Issue #29). No reactivar ninguno sin: runner estándar (`ubuntu-latest`, nunca `blacksmith-*`), sin secrets/vars `OPENCODE_*` no definidos, y sin referencias a `anomalyco/opencode` o `sst/opencode`.
-- Especial cuidado: `close-issues.ts` operaba sobre `anomalyco/opencode` — reactivarlo solo si se apunta a `jaminsmoke/Jarvis`.
+### Workflows activos
+
+Solo 3 workflows están activos en `.github/workflows/`:
+- `ci-quality` — typecheck + tests + lint + changelog
+- `release-desktop` — tags `v*`, build y publicación de escritorio
+- `pages-build-deployment` — GitHub Pages desde `docs/` (gestionado por GitHub)
+
+### Workflows heredados de OpenCode
+
+Los workflows del fork están en `.github/workflows/upstream-workflows/`. GitHub **no ejecuta** workflows en subdirectorios, por lo que están seguros e inactivos.
+
+**Procedimiento para adaptar uno:**
+1. Mover de `upstream-workflows/` a la raíz con `git mv`
+2. Reemplazar runners `blacksmith-*` → `ubuntu-latest` o `windows-latest`
+3. Eliminar secrets/vars `OPENCODE_*` no definidos en Jarvis
+4. Reemplazar referencias a `anomalyco/opencode` o `sst/opencode` → `jaminsmoke/Jarvis`
+5. Reemplazar `curl opencode.ai/install` → `curl jaminsmoke.github.io/Jarvis/install`
+6. Verificar con `gh workflow list` que aparece como active
+7. Actualizar esta sección de AGENTS.md
+
+**Reglas de seguridad:**
+- Nunca usar runners `blacksmith-*` (no accesibles desde Jarvis)
+- Nunca referenciar secrets/vars con prefijo `OPENCODE_`
+- `close-issues.ts` operaba sobre `anomalyco/opencode` — solo reactivar apuntando a `jaminsmoke/Jarvis`
+- `test.yml.disabled` se conserva en raíz como base para el futuro item de CI quality
 
 ## Branch Names
 

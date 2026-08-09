@@ -35,17 +35,7 @@
             {
               "title": "README principal rebrandeado con identidad Jarvis",
               "description": "Tras el refork a sst/opencode, se migró el README rebrandeado con título, badges y enlaces a jaminsmoke/Jarvis."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "tag": "Sin asignar",
-      "highlights": [
-        {
-          "source": "desktop",
-          "items": [
+            },
             {
               "title": "Refactor integral del toolkit kanban (CLI + Skills): corregir bugs y desbloquear toda la API de GitHub Projects",
               "description": "**Archivo**: `jarvis-skills/packages/kanban-cli/src/items.ts`"
