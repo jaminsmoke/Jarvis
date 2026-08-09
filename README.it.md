@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # oppure bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS e Linux (consigliato, sempre aggiornato)
 brew install opencode              # macOS e Linux (formula brew ufficiale, aggiornata meno spesso)
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # Qualsiasi OS
-nix run nixpkgs#opencode           # oppure github:jaminsmoke/Jarvis per l’ultima branch di sviluppo
+nix run nixpkgs#jarvis           # oppure github:jaminsmoke/Jarvis per l’ultima branch di sviluppo
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # oppure github:jaminsmoke/Jarvis per l’ult
 
 ### App Desktop (BETA)
 
-Jarvis è disponibile anche come applicazione desktop. Puoi scaricarla direttamente dalla [pagina delle release](https://github.com/jaminsmoke/Jarvis/releases) oppure da [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+Jarvis è disponibile anche come applicazione desktop. Puoi scaricarla direttamente dalla [pagina delle release](https://github.com/jaminsmoke/Jarvis/releases) oppure da [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Piattaforma           | Download                           |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, oppure AppImage    |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Directory di installazione

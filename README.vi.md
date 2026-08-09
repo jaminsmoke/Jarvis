@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # hoặc bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS và Linux (khuyên dùng, luôn cập nhật)
 brew install opencode              # macOS và Linux (công thức brew chính thức, ít cập nhật hơn)
 sudo pacman -S opencode            # Arch Linux (Bản ổn định)
 paru -S opencode-bin               # Arch Linux (Bản mới nhất từ AUR)
 mise use -g opencode               # Mọi hệ điều hành
-nix run nixpkgs#opencode           # hoặc github:jaminsmoke/Jarvis cho nhánh dev mới nhất
+nix run nixpkgs#jarvis           # hoặc github:jaminsmoke/Jarvis cho nhánh dev mới nhất
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # hoặc github:jaminsmoke/Jarvis cho nhánh 
 
 ### Ứng dụng Desktop (BETA)
 
-Jarvis cũng có sẵn dưới dạng ứng dụng desktop. Tải trực tiếp từ [trang releases](https://github.com/jaminsmoke/Jarvis/releases) hoặc [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+Jarvis cũng có sẵn dưới dạng ứng dụng desktop. Tải trực tiếp từ [trang releases](https://github.com/jaminsmoke/Jarvis/releases) hoặc [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Nền tảng              | Tải xuống                          |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, hoặc AppImage      |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Thư mục cài đặt

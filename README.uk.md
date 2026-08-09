@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # або bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS і Linux (рекомендовано, завжди актуально)
 brew install opencode              # macOS і Linux (офіційна формула Homebrew, оновлюється рідше)
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # Будь-яка ОС
-nix run nixpkgs#opencode           # або github:jaminsmoke/Jarvis для найновішої dev-гілки
+nix run nixpkgs#jarvis           # або github:jaminsmoke/Jarvis для найновішої dev-гілки
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # або github:jaminsmoke/Jarvis для на
 
 ### Десктопний застосунок (BETA)
 
-Jarvis також доступний як десктопний застосунок. Завантажуйте напряму зі [сторінки релізів](https://github.com/jaminsmoke/Jarvis/releases) або [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+Jarvis також доступний як десктопний застосунок. Завантажуйте напряму зі [сторінки релізів](https://github.com/jaminsmoke/Jarvis/releases) або [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Платформа             | Завантаження                       |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm` або AppImage        |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Каталог встановлення

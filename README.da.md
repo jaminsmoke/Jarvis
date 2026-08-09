@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # eller bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS og Linux (anbefalet, altid up to date)
 brew install opencode              # macOS og Linux (officiel brew formula, opdateres sjældnere)
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # alle OS
-nix run nixpkgs#opencode           # eller github:jaminsmoke/Jarvis for nyeste dev-branch
+nix run nixpkgs#jarvis           # eller github:jaminsmoke/Jarvis for nyeste dev-branch
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # eller github:jaminsmoke/Jarvis for nyeste d
 
 ### Desktop-app (BETA)
 
-Jarvis findes også som desktop-app. Download direkte fra [releases-siden](https://github.com/jaminsmoke/Jarvis/releases) eller [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+Jarvis findes også som desktop-app. Download direkte fra [releases-siden](https://github.com/jaminsmoke/Jarvis/releases) eller [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Platform              | Download                           |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, eller AppImage     |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Installationsmappe

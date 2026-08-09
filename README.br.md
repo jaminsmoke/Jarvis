@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # ou bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS e Linux (recomendado, sempre atualizado)
 brew install opencode              # macOS e Linux (fórmula oficial do brew, atualiza menos)
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # qualquer sistema
-nix run nixpkgs#opencode           # ou github:jaminsmoke/Jarvis para a branch dev mais recente
+nix run nixpkgs#jarvis           # ou github:jaminsmoke/Jarvis para a branch dev mais recente
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # ou github:jaminsmoke/Jarvis para a branch d
 
 ### App desktop (BETA)
 
-O Jarvis também está disponível como aplicativo desktop. Baixe diretamente pela [página de releases](https://github.com/jaminsmoke/Jarvis/releases) ou em [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+O Jarvis também está disponível como aplicativo desktop. Baixe diretamente pela [página de releases](https://github.com/jaminsmoke/Jarvis/releases) ou em [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Plataforma            | Download                           |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm` ou AppImage         |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Diretório de instalação

@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # bun/pnpm/yarn でもOK
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS と Linux（推奨。常に最新）
 brew install opencode              # macOS と Linux（公式 brew formula。更新頻度は低め）
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # どのOSでも
-nix run nixpkgs#opencode           # または github:jaminsmoke/Jarvis で最新 dev ブランチ
+nix run nixpkgs#jarvis           # または github:jaminsmoke/Jarvis で最新 dev ブランチ
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # または github:jaminsmoke/Jarvis で最�
 
 ### デスクトップアプリ (BETA)
 
-Jarvis はデスクトップアプリとしても利用できます。[releases page](https://github.com/jaminsmoke/Jarvis/releases) から直接ダウンロードするか、[opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download) を利用してください。
+Jarvis はデスクトップアプリとしても利用できます。[releases page](https://github.com/jaminsmoke/Jarvis/releases) から直接ダウンロードするか、[jarvis download](https://jaminsmoke.github.io/Jarvis/download) を利用してください。
 
 | プラットフォーム      | ダウンロード                       |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`、`.rpm`、または AppImage    |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### インストールディレクトリ

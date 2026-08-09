@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # ili bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS i Linux (preporučeno, uvijek ažurno)
 brew install opencode              # macOS i Linux (zvanična brew formula, rjeđe se ažurira)
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # Bilo koji OS
-nix run nixpkgs#opencode           # ili github:jaminsmoke/Jarvis za najnoviji dev branch
+nix run nixpkgs#jarvis           # ili github:jaminsmoke/Jarvis za najnoviji dev branch
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # ili github:jaminsmoke/Jarvis za najnoviji d
 
 ### Desktop aplikacija (BETA)
 
-Jarvis je dostupan i kao desktop aplikacija. Preuzmi je direktno sa [stranice izdanja](https://github.com/jaminsmoke/Jarvis/releases) ili sa [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download).
+Jarvis je dostupan i kao desktop aplikacija. Preuzmi je direktno sa [stranice izdanja](https://github.com/jaminsmoke/Jarvis/releases) ili sa [jarvis download](https://jaminsmoke.github.io/Jarvis/download).
 
 | Platforma             | Preuzimanje                        |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, ili AppImage       |
 
 ```bash
 # macOS (Homebrew)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### Instalacijski direktorij

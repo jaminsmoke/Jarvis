@@ -53,12 +53,11 @@ curl -fsSL https://jaminsmoke.github.io/Jarvis/install | bash
 npm i -g opencode-ai@latest        # 也可使用 bun/pnpm/yarn
 scoop install opencode             # Windows
 choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS 和 Linux（推荐，始终保持最新）
 brew install opencode              # macOS 和 Linux（官方 brew formula，更新频率较低）
 sudo pacman -S opencode            # Arch Linux (Stable)
 paru -S opencode-bin               # Arch Linux (Latest from AUR)
 mise use -g opencode               # 任意系统
-nix run nixpkgs#opencode           # 或用 github:jaminsmoke/Jarvis 获取最新 dev 分支
+nix run nixpkgs#jarvis           # 或用 github:jaminsmoke/Jarvis 获取最新 dev 分支
 ```
 
 > [!TIP]
@@ -66,20 +65,20 @@ nix run nixpkgs#opencode           # 或用 github:jaminsmoke/Jarvis 获取最�
 
 ### 桌面应用程序 (BETA)
 
-Jarvis 也提供桌面版应用。可直接从 [发布页 (releases page)](https://github.com/jaminsmoke/Jarvis/releases) 或 [opencode.ai/download](https://jaminsmoke.github.io/Jarvis/download) 下载。
+Jarvis 也提供桌面版应用。可直接从 [发布页 (releases page)](https://github.com/jaminsmoke/Jarvis/releases) 或 [jarvis download](https://jaminsmoke.github.io/Jarvis/download) 下载。
 
 | 平台                  | 下载文件                           |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `jarvis-desktop-mac-arm64.dmg`   |
+| macOS (Intel)         | `jarvis-desktop-mac-x64.dmg`     |
+| Windows               | `jarvis-desktop-win-x64.exe` |
 | Linux                 | `.deb`、`.rpm` 或 AppImage         |
 
 ```bash
 # macOS (Homebrew Cask)
-brew install --cask opencode-desktop
+brew install --cask jarvis-desktop
 # Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+scoop bucket add extras; scoop install extras/jarvis-desktop
 ```
 
 #### 安装目录
