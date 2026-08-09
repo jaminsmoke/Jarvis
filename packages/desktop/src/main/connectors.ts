@@ -100,28 +100,77 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   // Google requires GOOGLE_CLIENT_SECRET at build time. If missing,
   // the connector is permanently disabled (shown as "Coming soon").
   const googleSecretMissing = id === "google" && !process.env.GOOGLE_CLIENT_SECRET
+  // Backend enforcement of `disabled` (e.g. Microsoft): the connector must not
+  // be usable from IPC even though the card might still be rendered.
+  const disabled = Boolean(def.disabled)
 
   const KEY_ENABLED = `${storePrefix}.enabled`
-  const KEY_TOKEN = `${storePrefix}.token.encrypted` // base64(safeStorage.encryptString(token))
+  const KEY_TOKEN = `${storePrefix}.token.encrypted` // base64(safeStorage.encryptString(JSON credential))
   const KEY_USER = `${storePrefix}.user` // JSON of public ConnectorUser (not a secret)
 
   /** In-memory device-flow attempts keyed by opaque session id. */
   const deviceSessions = new Map<string, DeviceSession>()
   allDeviceSessions.set(id, deviceSessions)
 
-  function getStoredToken(): string | null {
-    const enc = store().get(KEY_TOKEN) as string | undefined
-    if (!enc) return null
-    return decryptToken(enc)
+  /** Full OAuth credential kept in the encrypted store. */
+  type StoredCredential = {
+    access: string
+    refresh?: string
+    /** epoch ms; undefined = never expires (GitHub) */
+    expiresAt?: number
   }
 
-  function storeToken(token: string | null) {
-    if (token === null) {
+  function getStoredCredential(): StoredCredential | null {
+    const enc = store().get(KEY_TOKEN) as string | undefined
+    if (!enc) return null
+    const decrypted = decryptToken(enc)
+    if (decrypted === null) return null
+    try {
+      const parsed = JSON.parse(decrypted) as StoredCredential
+      if (typeof parsed.access === "string") return parsed
+      return null
+    } catch {
+      // Legacy format: the store held a bare access token string.
+      return { access: decrypted }
+    }
+  }
+
+  function storeCredential(credential: StoredCredential | null) {
+    if (credential === null) {
       store().delete(KEY_TOKEN)
       store().delete(KEY_USER)
       return
     }
-    store().set(KEY_TOKEN, encryptToken(token))
+    store().set(KEY_TOKEN, encryptToken(JSON.stringify(credential)))
+  }
+
+  function isExpired(credential: StoredCredential): boolean {
+    return credential.expiresAt !== undefined && Date.now() > credential.expiresAt
+  }
+
+  /**
+   * Refresh an expiring access token (RFC 6749 §6). On success the store is
+   * updated with the new access token; on failure null is returned so callers
+   * report "disconnected" instead of leaking a stale token.
+   */
+  async function refreshAccess(credential: StoredCredential): Promise<StoredCredential | null> {
+    if (!credential.refresh) return null
+    const body: Record<string, string> = {
+      client_id: def.clientId,
+      refresh_token: credential.refresh,
+      grant_type: "refresh_token",
+    }
+    const secret = def.clientSecret ?? (id === "google" ? process.env.GOOGLE_CLIENT_SECRET : undefined)
+    if (secret) body.client_secret = secret
+    const data = await postForm(def.tokenUrl, body)
+    if (data.error || !data.access_token) return null
+    const next: StoredCredential = {
+      access: String(data.access_token),
+      refresh: data.refresh_token ? String(data.refresh_token) : credential.refresh,
+      expiresAt: data.expires_in ? Date.now() + Number(data.expires_in) * 1000 : credential.expiresAt,
+    }
+    storeCredential(next)
+    return next
   }
 
   function getStoredUser(): ConnectorUser | undefined {
@@ -142,20 +191,27 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   }
 
   async function status(): Promise<ConnectorStatus> {
-    if (googleSecretMissing) return { enabled: false, connected: false }
+    if (googleSecretMissing || disabled) return { enabled: false, connected: false }
     const enabled = Boolean(store().get(KEY_ENABLED))
-    const token = getStoredToken()
+    let credential = getStoredCredential()
     const user = getStoredUser()
-    return { enabled, connected: token !== null, user }
+    // Auto-refresh an expired access token when a refresh token exists.
+    // A refresh that returns another expired token counts as disconnected.
+    if (credential && isExpired(credential)) {
+      const refreshed = await refreshAccess(credential)
+      credential = refreshed && !isExpired(refreshed) ? refreshed : null
+    }
+    return { enabled, connected: credential !== null, user }
   }
 
   async function setEnabled(enabled: boolean): Promise<ConnectorStatus> {
-    if (googleSecretMissing) return status()
+    if (googleSecretMissing || disabled) return status()
     store().set(KEY_ENABLED, enabled)
     return status()
   }
 
   async function startDeviceFlow(): Promise<DeviceFlowStart> {
+    if (disabled) throw new Error(`${id} connector is disabled`)
     const data = await postForm(def.deviceCodeUrl, {
       client_id: def.clientId,
       scope: def.scopes,
@@ -182,6 +238,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   }
 
   async function pollDeviceFlow(sessionId: string): Promise<DeviceFlowPoll> {
+    if (disabled) return { status: "error", message: `${id} connector is disabled` }
     const session = deviceSessions.get(sessionId)
     if (!session) return { status: "error", message: "Session not found or already finished" }
     if (Date.now() > session.expires_at) {
@@ -224,7 +281,13 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
 
     try {
       const user = await fetchUser(accessToken)
-      storeToken(accessToken)
+      // Persist the full credential: access + refresh + expiry. Providers
+      // without refresh tokens (GitHub) store no expiresAt (never expires).
+      storeCredential({
+        access: accessToken,
+        refresh: data.refresh_token ? String(data.refresh_token) : undefined,
+        expiresAt: data.expires_in ? Date.now() + Number(data.expires_in) * 1000 : undefined,
+      })
       store().set(KEY_USER, JSON.stringify(user))
       store().set(KEY_ENABLED, true)
       return { status: "success", user }
@@ -234,7 +297,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   }
 
   async function disconnect(): Promise<ConnectorStatus> {
-    storeToken(null)
+    storeCredential(null)
     store().delete(KEY_USER)
     // Keep `enabled` as-is: disconnecting does not disable the connector.
     return status()
@@ -243,7 +306,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
   function startupHook() {
     void app.whenReady().then(() => {
       // Touch the store eagerly so decrypt failures surface early (and clear).
-      if (getStoredToken() === null && store().get(KEY_TOKEN)) {
+      if (getStoredCredential() === null && store().get(KEY_TOKEN)) {
         store().delete(KEY_TOKEN)
         store().delete(KEY_USER)
       }

@@ -7,17 +7,20 @@
  *
  * Every connector is defined in `@opencode-ai/app/connectors/registry`; this
  * module is a factory that turns each definition into Effect handlers, storing
- * the access token in the server Credential store (SQLite) keyed by the
- * connector id. Tokens are never returned to the browser.
+ * the OAuth credential (access + refresh + expiry) in the server Credential
+ * store (SQLite) keyed by the connector id. Tokens are never returned to the
+ * browser.
  *
  * Security note: unlike the desktop build (Electron safeStorage), the token is
  * stored as-is in the server SQLite Credential table. This matches how AI
  * provider OAuth credentials are stored in this codebase; encrypting at rest
  * would require a server-side secret and is out of scope for the web proxy.
+ * Per the kanban decision, connected tools must not be exposed until
+ * encryption at rest exists.
  */
 
 import { randomUUID } from "node:crypto"
-import { Effect } from "effect"
+import { Effect, Option } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { Credential } from "@opencode-ai/core/credential"
 import { Integration } from "@opencode-ai/schema/integration"
@@ -79,26 +82,95 @@ async function fetchUser(def: ConnectorDefinition, token: string): Promise<GitHu
 /** Build the five connector handlers for a definition. */
 function buildConnectorHandlers(def: ConnectorDefinition) {
   const INTEGRATION_ID = def.id as Integration.ID
+  const methodID = Integration.MethodID.make(def.id)
+
+  /**
+   * Refresh an expiring OAuth access token using the stored refresh token
+   * (RFC 6749 §6). On success the credential is atomically replaced server-side;
+   * on failure the old credential is kept and undefined is returned so callers
+   * can report "disconnected" instead of leaking a stale token.
+   */
+  function refreshOAuth(id: Credential.ID, value: Credential.OAuth) {
+    return Effect.gen(function* () {
+      const body: Record<string, string> = {
+        client_id: def.clientId,
+        refresh_token: value.refresh,
+        grant_type: "refresh_token",
+      }
+      // Google TV-type clients require client_secret at the token endpoint.
+      // Read at runtime — the secret cannot be committed to the public repo.
+      const secret = def.clientSecret ?? (def.id === "google" ? process.env.GOOGLE_CLIENT_SECRET : undefined)
+      if (secret) body.client_secret = secret
+      const data = yield* Effect.tryPromise({
+        try: () => tokenPostForm(def.tokenUrl, body),
+        catch: (error) => new ConnectorApiError({ name: "BadRequest", data: { message: errorMessage(error) } }),
+      })
+      if (data.error) return undefined
+      const access = String(data.access_token ?? "")
+      if (!access) return undefined
+      const next: Credential.OAuth = {
+        ...value,
+        access,
+        refresh: String(data.refresh_token ?? value.refresh),
+        expires: data.expires_in ? Date.now() + Number(data.expires_in) * 1000 : value.expires,
+      }
+      const credential = yield* Credential.Service
+      yield* credential.update(id, { value: next })
+      return next
+    })
+  }
+
+  /**
+   * True when the stored credential is an OAuth credential (not a legacy key).
+   * Legacy `key` credentials predate the OAuth contract and are treated as
+   * connected on read (mirroring desktop) until they are replaced.
+   */
+  function isOAuth(value: Credential.Value): value is Credential.OAuth {
+    return value.type === "oauth"
+  }
+
+  /** Metadata shared by both credential shapes (enabled flag, user). */
+  function metadataOf(value: Credential.Value): Record<string, unknown> | undefined {
+    return value.metadata
+  }
 
   return {
     status: Effect.fn(`ConnectorHttpApi.${def.id}Status`)(function* () {
+      if (def.disabled) return { enabled: false, connected: false }
       const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const stored = current[0]
-      if (!stored || stored.value.type !== "key") return { enabled: false, connected: false }
-      const metadata = stored.value.metadata ?? {}
+      if (!stored) return { enabled: false, connected: false }
+
+      const metadata = metadataOf(stored.value) ?? {}
       const user = metadata.user as GitHubUser | undefined
       const enabled = metadata.enabled === true
-      return { enabled, connected: true, user }
+      // Legacy `key` credentials: still connected (the token exists and has no
+      // expiry tracking). They migrate to OAuth on the next successful poll.
+      if (!isOAuth(stored.value)) {
+        return { enabled, connected: true, user }
+      }
+
+      let value = stored.value
+      // Auto-refresh when the access token has expired and a refresh token exists.
+      // A refresh failure is not a transport error — report disconnected instead
+      // of failing the status endpoint (which cannot raise ConnectorApiError).
+      if (value.refresh && value.expires > 0 && Date.now() > value.expires) {
+        const refreshed = yield* refreshOAuth(stored.id, value).pipe(Effect.option)
+        if (Option.isSome(refreshed) && refreshed.value) value = refreshed.value
+      }
+      const connected = value.expires === 0 || Date.now() <= value.expires
+      return { enabled, connected, user }
     }),
 
     setEnabled: Effect.fn(`ConnectorHttpApi.${def.id}SetEnabled`)(function* (ctx: {
       payload: { enabled: boolean }
     }) {
+      if (def.disabled) return { enabled: false, connected: false }
       const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const existing = current[0]
-      if (!existing || existing.value.type !== "key") {
+      if (!existing) {
         return { enabled: ctx.payload.enabled, connected: false }
       }
       yield* credential.update(existing.id, {
@@ -115,6 +187,11 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
     }),
 
     device: Effect.fn(`ConnectorHttpApi.${def.id}Device`)(function* () {
+      if (def.disabled) {
+        return yield* Effect.fail(
+          new ConnectorApiError({ name: "BadRequest", data: { message: `${def.id} connector is disabled` } }),
+        )
+      }
       pruneExpiredSessions()
       const data = yield* Effect.tryPromise({
         try: () => postForm(def.deviceCodeUrl, { client_id: def.clientId, scope: def.scopes }),
@@ -146,6 +223,7 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
     poll: Effect.fn(`ConnectorHttpApi.${def.id}Poll`)(function* (ctx: {
       payload: { sessionId: string }
     }) {
+      if (def.disabled) return { status: "error", message: `${def.id} connector is disabled` } as const
       pruneExpiredSessions()
       const session = deviceSessions.get(ctx.payload.sessionId)
       if (!session) return { status: "error", message: "Session not found or already finished" } as const
@@ -198,9 +276,20 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
       })
 
       const credential = yield* Credential.Service
+      // Store the full OAuth credential: access + refresh + expiry. Providers
+      // without refresh tokens (GitHub) store expires=0 (never expires).
+      const refreshToken = String(data.refresh_token ?? "")
+      const expiresIn = Number(data.expires_in ?? 0)
       yield* credential.create({
         integrationID: INTEGRATION_ID,
-        value: { type: "key", key: accessToken, metadata: { enabled: true, user } },
+        value: {
+          type: "oauth",
+          methodID,
+          access: accessToken,
+          refresh: refreshToken,
+          expires: expiresIn > 0 ? Date.now() + expiresIn * 1000 : 0,
+          metadata: { enabled: true, user },
+        },
       })
 
       return { status: "success", user } as const
@@ -209,8 +298,13 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
     disconnect: Effect.fn(`ConnectorHttpApi.${def.id}Disconnect`)(function* () {
       const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
+      const stored = current[0]
+      // Disconnecting does NOT disable the connector (switch = preference,
+      // connected = authenticated). Match the desktop semantics.
+      const metadata = stored ? metadataOf(stored.value) ?? {} : {}
+      const enabled = metadata.enabled === true
       for (const entry of current) yield* credential.remove(entry.id)
-      return { enabled: false, connected: false }
+      return { enabled, connected: false }
     }),
   }
 }

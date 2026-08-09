@@ -44,6 +44,9 @@ const store = createMemoryStore()
 let connectors: typeof import("./connectors")
 
 beforeAll(async () => {
+  // Google is only enabled when GOOGLE_CLIENT_SECRET exists at module load.
+  // Set it before importing so the google connector behaves as enabled.
+  process.env.GOOGLE_CLIENT_SECRET = "test-secret"
   mock.module("electron", () => ({
     app: { whenReady: () => Promise.resolve() },
     safeStorage,
@@ -88,6 +91,15 @@ beforeEach(() => {
 })
 
 // ── Status ──
+
+/** Decrypt + parse the stored credential JSON (mirrors connectors.ts). */
+function storedCredential(prefix: string): Record<string, unknown> | null {
+  const raw = store.get(`${prefix}.token.encrypted`) as string | undefined
+  if (!raw) return null
+  const decrypted = Buffer.from(raw, "base64").toString()
+  if (!decrypted.startsWith("enc:")) return null
+  return JSON.parse(decrypted.slice(4))
+}
 
 describe("githubStatus / githubSetEnabled", () => {
   test("reports disconnected when nothing is stored", async () => {
@@ -191,7 +203,7 @@ describe("githubPollDeviceFlow", () => {
     })
   })
 
-  test("completes the flow, stores the encrypted token and marks connected", async () => {
+  test("completes the flow, stores the encrypted credential and marks connected", async () => {
     routeFetch({
       [DEVICE_CODE_URL]: () => jsonResponse({ device_code: "d1", user_code: "ABC-DEF" }),
       [TOKEN_URL]: () => jsonResponse({ access_token: "tok-123" }),
@@ -206,8 +218,9 @@ describe("githubPollDeviceFlow", () => {
       status: "success",
       user: { login: "jaminsmoke", avatar: "https://avatars.example/a.png", name: "Jamin" },
     })
-    // Token persisted encrypted (never plaintext), user + enabled alongside.
-    expect(store.get("connector.github.token.encrypted")).toBe(Buffer.from("enc:tok-123").toString("base64"))
+    // Credential persisted encrypted (never plaintext), user + enabled alongside.
+    // GitHub has no refresh token: stored as access-only (never expires).
+    expect(storedCredential("connector.github")).toEqual({ access: "tok-123" })
     expect(store.get("connector.github.enabled")).toBe(true)
     const status = await connectors.githubStatus()
     expect(status.connected).toBe(true)
@@ -268,7 +281,10 @@ describe("githubPollDeviceFlow", () => {
 
 describe("githubDisconnect and cleanup", () => {
   test("disconnect removes token and user but keeps the connector enabled", async () => {
-    store.set("connector.github.token.encrypted", Buffer.from("enc:tok").toString("base64"))
+    store.set(
+      "connector.github.token.encrypted",
+      Buffer.from(`enc:${JSON.stringify({ access: "tok" })}`).toString("base64"),
+    )
     store.set("connector.github.user", JSON.stringify({ login: "x", avatar: "y" }))
     store.set("connector.github.enabled", true)
 
@@ -296,6 +312,14 @@ describe("githubDisconnect and cleanup", () => {
     expect(store.get("connector.github.token.encrypted")).toBeUndefined()
     expect(store.get("connector.github.user")).toBeUndefined()
   })
+
+  test("legacy plaintext token is read as access-only credential", async () => {
+    store.set("connector.github.token.encrypted", Buffer.from("enc:legacy-tok").toString("base64"))
+    store.set("connector.github.enabled", true)
+
+    const status = await connectors.githubStatus()
+    expect(status).toEqual({ enabled: true, connected: true, user: undefined })
+  })
 })
 
 // ── Google & Microsoft (config-driven connectors) ──
@@ -305,10 +329,10 @@ describe("google connector", () => {
   const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
   const GOOGLE_USER_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
-  test("completes the flow and stores the token under connector.google.*", async () => {
+  test("completes the flow and stores the credential under connector.google.*", async () => {
     routeFetch({
       [GOOGLE_DEVICE_URL]: () => jsonResponse({ device_code: "gd1", user_code: "ABCD-EFGH", interval: 5, expires_in: 900 }),
-      [GOOGLE_TOKEN_URL]: () => jsonResponse({ access_token: "gtok-123" }),
+      [GOOGLE_TOKEN_URL]: () => jsonResponse({ access_token: "gtok-123", refresh_token: "grefresh-1", expires_in: 3600 }),
       [GOOGLE_USER_URL]: () =>
         jsonResponse({ email: "user@example.com", picture: "https://example.com/p.png", name: "User" }),
     })
@@ -322,8 +346,53 @@ describe("google connector", () => {
       status: "success",
       user: { login: "user@example.com", avatar: "https://example.com/p.png", name: "User" },
     })
-    expect(store.get("connector.google.token.encrypted")).toBe(Buffer.from("enc:gtok-123").toString("base64"))
+    const cred = storedCredential("connector.google")
+    expect(cred?.access).toBe("gtok-123")
+    expect(cred?.refresh).toBe("grefresh-1")
+    expect(cred?.expiresAt).toBeTypeOf("number")
     expect(store.get("connector.google.enabled")).toBe(true)
+  })
+
+  test("auto-refreshes an expired access token using the stored refresh token", async () => {
+    routeFetch({
+      [GOOGLE_DEVICE_URL]: () => jsonResponse({ device_code: "gd1", user_code: "ABCD-EFGH", interval: 5, expires_in: 900 }),
+      // Device grant returns an already-expired access token + refresh token;
+      // the refresh grant returns a fresh token.
+      [GOOGLE_TOKEN_URL]: (init) => {
+        const body = new URLSearchParams(String(init?.body))
+        return body.get("grant_type") === "refresh_token"
+          ? jsonResponse({ access_token: "gtok-fresh", refresh_token: "grefresh-2", expires_in: 3600 })
+          : jsonResponse({ access_token: "gtok-old", refresh_token: "grefresh-1", expires_in: -10 })
+      },
+      [GOOGLE_USER_URL]: () =>
+        jsonResponse({ email: "user@example.com", picture: "https://example.com/p.png" }),
+    })
+
+    const started = await connectors.googleStartDeviceFlow()
+    await connectors.googlePollDeviceFlow(started.sessionId)
+
+    // status() sees the expired token and refreshes it automatically.
+    const after = await connectors.googleStatus()
+    expect(after.connected).toBe(true)
+    expect(storedCredential("connector.google")?.access).toBe("gtok-fresh")
+  })
+
+  test("reports disconnected when the refresh grant fails", async () => {
+    store.set(
+      "connector.google.token.encrypted",
+      Buffer.from(
+        `enc:${JSON.stringify({ access: "gtok-old", refresh: "grefresh-1", expiresAt: Date.now() - 1000 })}`,
+      ).toString("base64"),
+    )
+    store.set("connector.google.user", JSON.stringify({ login: "user@example.com", avatar: "x" }))
+    store.set("connector.google.enabled", true)
+
+    routeFetch({
+      [GOOGLE_TOKEN_URL]: () => jsonResponse({ error: "invalid_grant" }),
+    })
+
+    const status = await connectors.googleStatus()
+    expect(status).toEqual({ enabled: true, connected: false, user: { login: "user@example.com", avatar: "x" } })
   })
 
   test("uses its own denied error code", async () => {
@@ -336,48 +405,33 @@ describe("google connector", () => {
   })
 })
 
-describe("microsoft connector", () => {
-  const MS_DEVICE_URL = "https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode"
-  const MS_TOKEN_URL = "https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
-  const MS_USER_URL = "https://graph.microsoft.com/v1.0/me"
-
-  test("completes the flow and stores the token under connector.microsoft.*", async () => {
-    routeFetch({
-      [MS_DEVICE_URL]: () => jsonResponse({ device_code: "md1", user_code: "WXYZ-1234", interval: 5, expires_in: 900 }),
-      [MS_TOKEN_URL]: () => jsonResponse({ access_token: "mtok-456" }),
-      [MS_USER_URL]: () =>
-        jsonResponse({ id: "obj-1", userPrincipalName: "user@contoso.com", displayName: "Contoso User" }),
-    })
-
-    const started = await connectors.microsoftStartDeviceFlow()
-    expect(started.userCode).toBe("WXYZ-1234")
-
-    const poll = await connectors.microsoftPollDeviceFlow(started.sessionId)
-    expect(poll).toEqual({
-      status: "success",
-      user: { login: "user@contoso.com", avatar: "", name: "Contoso User" },
-    })
-    expect(store.get("connector.microsoft.token.encrypted")).toBe(Buffer.from("enc:mtok-456").toString("base64"))
-    expect(store.get("connector.microsoft.enabled")).toBe(true)
+describe("microsoft connector (disabled backend enforcement)", () => {
+  test("status reports disabled", async () => {
+    expect(await connectors.microsoftStatus()).toEqual({ enabled: false, connected: false })
   })
 
-  test("uses authorization_declined as its denied error code", async () => {
-    routeFetch({
-      [MS_DEVICE_URL]: () => jsonResponse({ device_code: "md1", user_code: "WXYZ-1234" }),
-      [MS_TOKEN_URL]: () => jsonResponse({ error: "authorization_declined" }),
-    })
-    const started = await connectors.microsoftStartDeviceFlow()
-    expect(await connectors.microsoftPollDeviceFlow(started.sessionId)).toEqual({ status: "denied" })
+  test("setEnabled is a no-op when disabled", async () => {
+    const status = await connectors.microsoftSetEnabled(true)
+    expect(status.enabled).toBe(false)
+    expect(store.get("connector.microsoft.enabled")).toBeUndefined()
   })
 
-  test("disconnect clears the microsoft token", async () => {
-    store.set("connector.microsoft.token.encrypted", Buffer.from("enc:tok").toString("base64"))
+  test("startDeviceFlow refuses to initiate OAuth", async () => {
+    expect(connectors.microsoftStartDeviceFlow()).rejects.toThrow(/disabled/)
+  })
+
+  test("disconnect clears the microsoft credential (disabled reports disabled)", async () => {
+    store.set(
+      "connector.microsoft.token.encrypted",
+      Buffer.from(`enc:${JSON.stringify({ access: "tok" })}`).toString("base64"),
+    )
     store.set("connector.microsoft.user", JSON.stringify({ login: "user@contoso.com", avatar: "" }))
     store.set("connector.microsoft.enabled", true)
 
     const status = await connectors.microsoftDisconnect()
 
-    expect(status).toEqual({ enabled: true, connected: false, user: undefined })
+    // Disabled connectors always report disabled, even after disconnect.
+    expect(status).toEqual({ enabled: false, connected: false })
     expect(store.get("connector.microsoft.token.encrypted")).toBeUndefined()
   })
 })
