@@ -1,0 +1,51 @@
+name: upstream-report
+
+# Informe semanal de sincronización con upstream (Issue #41).
+# SOLO informa: publica el ahead/behind y los commits candidatos como
+# issue/comentario. NUNCA mergea nada — la sync se decide en el kanban.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # lunes 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: upstream-report
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: Generar y publicar informe upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (historia completa)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Añadir remote upstream
+        run: git remote add upstream https://github.com/sst/opencode.git
+
+      - name: Generar informe
+        run: |
+          python scripts/upstream-report.py > /tmp/upstream-report.md
+          echo "Informe generado ($(wc -l < /tmp/upstream-report.md) líneas)"
+
+      - name: Publicar informe (crear o comentar issue)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="Informe upstream (semanal)"
+          ISSUE=$(gh issue list --search "in:title \"Informe upstream (semanal)\"" --state open \
+            --json number --jq '.[0].number' 2>/dev/null || true)
+          if [ -z "$ISSUE" ]; then
+            gh issue create --title "$TITLE" --body-file /tmp/upstream-report.md --label upstream
+            echo "Issue de informe creado"
+          else
+            gh issue comment "$ISSUE" --body-file /tmp/upstream-report.md
+            echo "Comentario añadido al issue #$ISSUE"
+          fi
