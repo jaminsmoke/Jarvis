@@ -15,14 +15,20 @@
  *      está presente en app.asar (detecta la clase de error v0.1.0:
  *      módulo virtual ausente que solo aparece al empaquetar).
  *   3. Versión: dist/latest.yml reporta la versión esperada del tag.
- *   4. Arranque + alive: el exe empaquetado arranca y el proceso sigue vivo.
+ *   4. Arranque + alive: la app empaquetada (dist/win-unpacked) arranca y el
+ *      proceso sigue vivo.
  *   5. Health del server local: GET http://localhost:4096/global/health
  *      responde healthy (el server escucha 4096 primero, luego puerto libre).
+ *
+ * Nota: `--exe` recibe dist/jarvis-desktop-win-x64.exe, que es el INSTALADOR
+ * NSIS (win.target: ["nsis"]). El instalador instala y sale con exit 0 sin
+ * arrancar la app, así que el smoke resuelve la app empaquetada real en
+ * dist/win-unpacked/ (el binario que se instala, con app.asar dentro).
  *
  * Exit code 0 = gate superado. Cualquier fallo imprime un mensaje claro y
  * conserva el artefacto en disco para diagnóstico.
  */
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 
 // 127.0.0.1 en vez de localhost: en Windows/Node, localhost puede resolver a ::1
@@ -115,6 +121,26 @@ function checkVersion(latestYmlPath: string, expected: string) {
   pass(`latest.yml reporta versión ${actual} (coincide con el tag)`)
 }
 
+/**
+ * Resuelve la app empaquetada real a partir de --exe.
+ *
+ * --exe apunta al instalador NSIS (dist/jarvis-desktop-win-x64.exe), que al
+ * ejecutarse instala y sale con exit 0 sin arrancar Jarvis — el smoke nunca
+ * vería el server. La app real vive en dist/win-unpacked/<productName>.exe
+ * ("Jarvis.exe" en prod). Se resuelve escaneando win-unpacked: es el único
+ * .exe de nivel superior (unins000.exe es el desinstalador y se excluye).
+ */
+function resolveAppExe(opts: Options): string {
+  const unpackedDir = join(opts.distDir, "win-unpacked")
+  if (!existsSync(unpackedDir)) return opts.exe
+  const candidates = readdirSync(unpackedDir)
+    .filter((f) => f.toLowerCase().endsWith(".exe") && f.toLowerCase() !== "unins000.exe")
+    .map((f) => join(unpackedDir, f))
+  if (candidates.length === 1) return candidates[0]
+  const named = candidates.find((f) => f.toLowerCase().includes("jarvis"))
+  return named ?? opts.exe
+}
+
 /** Pruebas 4 y 5: arranque del exe, proceso vivo y health del server local. */
 async function checkLaunch(exePath: string) {
   if (!existsSync(exePath)) {
@@ -186,12 +212,16 @@ async function checkLaunch(exePath: string) {
 
 async function main() {
   const opts = parseArgs(process.argv)
+  const appExe = resolveAppExe(opts)
   console.log(`--- Smoke test del artefacto (${opts.exe}, versión ${opts.version}) ---`)
+  if (appExe !== opts.exe) {
+    console.log(`    App empaquetada resuelta: ${appExe} (--exe es el instalador NSIS)`)
+  }
 
   checkConfig()
   checkAsar(join(opts.distDir, "win-unpacked", "resources", "app.asar"))
   checkVersion(join(opts.distDir, "latest.yml"), opts.version)
-  await checkLaunch(opts.exe)
+  await checkLaunch(appExe)
 
   if (failures.length > 0) {
     console.error(`\nGATE FAILED (${failures.length} fallo(s)):`)
