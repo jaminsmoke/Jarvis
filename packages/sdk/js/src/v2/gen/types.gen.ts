@@ -2126,6 +2126,13 @@ export type Provider = {
   }
 }
 
+export type ConnectorApiError = {
+  name: "BadRequest"
+  data: {
+    message?: string
+  }
+}
+
 export type ExperimentalCapabilities = {
   backgroundSubagents: boolean
 }
@@ -7493,6 +7500,559 @@ export type ConfigProvidersResponses = {
 }
 
 export type ConfigProvidersResponse = ConfigProvidersResponses[keyof ConfigProvidersResponses]
+
+export type ConnectorGithubStatusData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/github/status"
+}
+
+export type ConnectorGithubStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGithubStatusError = ConnectorGithubStatusErrors[keyof ConnectorGithubStatusErrors]
+
+export type ConnectorGithubStatusResponses = {
+  /**
+   * GitHub connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGithubStatusResponse = ConnectorGithubStatusResponses[keyof ConnectorGithubStatusResponses]
+
+export type ConnectorGithubSetEnabledData = {
+  body?: {
+    enabled: boolean
+  }
+  path?: never
+  query?: never
+  url: "/connector/github/set-enabled"
+}
+
+export type ConnectorGithubSetEnabledErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGithubSetEnabledError = ConnectorGithubSetEnabledErrors[keyof ConnectorGithubSetEnabledErrors]
+
+export type ConnectorGithubSetEnabledResponses = {
+  /**
+   * GitHub connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGithubSetEnabledResponse =
+  ConnectorGithubSetEnabledResponses[keyof ConnectorGithubSetEnabledResponses]
+
+export type ConnectorGithubDeviceData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/github/device"
+}
+
+export type ConnectorGithubDeviceErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorGithubDeviceError = ConnectorGithubDeviceErrors[keyof ConnectorGithubDeviceErrors]
+
+export type ConnectorGithubDeviceResponses = {
+  /**
+   * Device-flow authorization start
+   */
+  200: {
+    sessionId: string
+    userCode: string
+    verificationUri: string
+    interval: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    expiresIn: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+  }
+}
+
+export type ConnectorGithubDeviceResponse = ConnectorGithubDeviceResponses[keyof ConnectorGithubDeviceResponses]
+
+export type ConnectorGithubPollData = {
+  body?: {
+    sessionId: string
+  }
+  path?: never
+  query?: never
+  url: "/connector/github/poll"
+}
+
+export type ConnectorGithubPollErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorGithubPollError = ConnectorGithubPollErrors[keyof ConnectorGithubPollErrors]
+
+export type ConnectorGithubPollResponses = {
+  /**
+   * Device-flow poll result
+   */
+  200:
+    | {
+        status: "success"
+        user: {
+          login: string
+          avatar: string
+          name?: string
+        }
+      }
+    | {
+        status: "pending"
+        slowDown?: boolean
+      }
+    | {
+        status: "expired"
+      }
+    | {
+        status: "denied"
+      }
+    | {
+        status: "error"
+        message: string
+      }
+}
+
+export type ConnectorGithubPollResponse = ConnectorGithubPollResponses[keyof ConnectorGithubPollResponses]
+
+export type ConnectorGithubDisconnectData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/github/disconnect"
+}
+
+export type ConnectorGithubDisconnectErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGithubDisconnectError = ConnectorGithubDisconnectErrors[keyof ConnectorGithubDisconnectErrors]
+
+export type ConnectorGithubDisconnectResponses = {
+  /**
+   * GitHub connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGithubDisconnectResponse =
+  ConnectorGithubDisconnectResponses[keyof ConnectorGithubDisconnectResponses]
+
+export type ConnectorGoogleStatusData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/google/status"
+}
+
+export type ConnectorGoogleStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGoogleStatusError = ConnectorGoogleStatusErrors[keyof ConnectorGoogleStatusErrors]
+
+export type ConnectorGoogleStatusResponses = {
+  /**
+   * Google connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGoogleStatusResponse = ConnectorGoogleStatusResponses[keyof ConnectorGoogleStatusResponses]
+
+export type ConnectorGoogleSetEnabledData = {
+  body?: {
+    enabled: boolean
+  }
+  path?: never
+  query?: never
+  url: "/connector/google/set-enabled"
+}
+
+export type ConnectorGoogleSetEnabledErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGoogleSetEnabledError = ConnectorGoogleSetEnabledErrors[keyof ConnectorGoogleSetEnabledErrors]
+
+export type ConnectorGoogleSetEnabledResponses = {
+  /**
+   * Google connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGoogleSetEnabledResponse =
+  ConnectorGoogleSetEnabledResponses[keyof ConnectorGoogleSetEnabledResponses]
+
+export type ConnectorGoogleDeviceData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/google/device"
+}
+
+export type ConnectorGoogleDeviceErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorGoogleDeviceError = ConnectorGoogleDeviceErrors[keyof ConnectorGoogleDeviceErrors]
+
+export type ConnectorGoogleDeviceResponses = {
+  /**
+   * Device-flow authorization start
+   */
+  200: {
+    sessionId: string
+    userCode: string
+    verificationUri: string
+    interval: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    expiresIn: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+  }
+}
+
+export type ConnectorGoogleDeviceResponse = ConnectorGoogleDeviceResponses[keyof ConnectorGoogleDeviceResponses]
+
+export type ConnectorGooglePollData = {
+  body?: {
+    sessionId: string
+  }
+  path?: never
+  query?: never
+  url: "/connector/google/poll"
+}
+
+export type ConnectorGooglePollErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorGooglePollError = ConnectorGooglePollErrors[keyof ConnectorGooglePollErrors]
+
+export type ConnectorGooglePollResponses = {
+  /**
+   * Device-flow poll result
+   */
+  200:
+    | {
+        status: "success"
+        user: {
+          login: string
+          avatar: string
+          name?: string
+        }
+      }
+    | {
+        status: "pending"
+        slowDown?: boolean
+      }
+    | {
+        status: "expired"
+      }
+    | {
+        status: "denied"
+      }
+    | {
+        status: "error"
+        message: string
+      }
+}
+
+export type ConnectorGooglePollResponse = ConnectorGooglePollResponses[keyof ConnectorGooglePollResponses]
+
+export type ConnectorGoogleDisconnectData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/google/disconnect"
+}
+
+export type ConnectorGoogleDisconnectErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorGoogleDisconnectError = ConnectorGoogleDisconnectErrors[keyof ConnectorGoogleDisconnectErrors]
+
+export type ConnectorGoogleDisconnectResponses = {
+  /**
+   * Google connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorGoogleDisconnectResponse =
+  ConnectorGoogleDisconnectResponses[keyof ConnectorGoogleDisconnectResponses]
+
+export type ConnectorMicrosoftStatusData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/microsoft/status"
+}
+
+export type ConnectorMicrosoftStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorMicrosoftStatusError = ConnectorMicrosoftStatusErrors[keyof ConnectorMicrosoftStatusErrors]
+
+export type ConnectorMicrosoftStatusResponses = {
+  /**
+   * Microsoft connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorMicrosoftStatusResponse =
+  ConnectorMicrosoftStatusResponses[keyof ConnectorMicrosoftStatusResponses]
+
+export type ConnectorMicrosoftSetEnabledData = {
+  body?: {
+    enabled: boolean
+  }
+  path?: never
+  query?: never
+  url: "/connector/microsoft/set-enabled"
+}
+
+export type ConnectorMicrosoftSetEnabledErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorMicrosoftSetEnabledError =
+  ConnectorMicrosoftSetEnabledErrors[keyof ConnectorMicrosoftSetEnabledErrors]
+
+export type ConnectorMicrosoftSetEnabledResponses = {
+  /**
+   * Microsoft connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorMicrosoftSetEnabledResponse =
+  ConnectorMicrosoftSetEnabledResponses[keyof ConnectorMicrosoftSetEnabledResponses]
+
+export type ConnectorMicrosoftDeviceData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/microsoft/device"
+}
+
+export type ConnectorMicrosoftDeviceErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorMicrosoftDeviceError = ConnectorMicrosoftDeviceErrors[keyof ConnectorMicrosoftDeviceErrors]
+
+export type ConnectorMicrosoftDeviceResponses = {
+  /**
+   * Device-flow authorization start
+   */
+  200: {
+    sessionId: string
+    userCode: string
+    verificationUri: string
+    interval: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    expiresIn: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+  }
+}
+
+export type ConnectorMicrosoftDeviceResponse =
+  ConnectorMicrosoftDeviceResponses[keyof ConnectorMicrosoftDeviceResponses]
+
+export type ConnectorMicrosoftPollData = {
+  body?: {
+    sessionId: string
+  }
+  path?: never
+  query?: never
+  url: "/connector/microsoft/poll"
+}
+
+export type ConnectorMicrosoftPollErrors = {
+  /**
+   * ConnectorApiError | InvalidRequestError
+   */
+  400: ConnectorApiError | InvalidRequestError
+}
+
+export type ConnectorMicrosoftPollError = ConnectorMicrosoftPollErrors[keyof ConnectorMicrosoftPollErrors]
+
+export type ConnectorMicrosoftPollResponses = {
+  /**
+   * Device-flow poll result
+   */
+  200:
+    | {
+        status: "success"
+        user: {
+          login: string
+          avatar: string
+          name?: string
+        }
+      }
+    | {
+        status: "pending"
+        slowDown?: boolean
+      }
+    | {
+        status: "expired"
+      }
+    | {
+        status: "denied"
+      }
+    | {
+        status: "error"
+        message: string
+      }
+}
+
+export type ConnectorMicrosoftPollResponse = ConnectorMicrosoftPollResponses[keyof ConnectorMicrosoftPollResponses]
+
+export type ConnectorMicrosoftDisconnectData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/connector/microsoft/disconnect"
+}
+
+export type ConnectorMicrosoftDisconnectErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConnectorMicrosoftDisconnectError =
+  ConnectorMicrosoftDisconnectErrors[keyof ConnectorMicrosoftDisconnectErrors]
+
+export type ConnectorMicrosoftDisconnectResponses = {
+  /**
+   * Microsoft connector status
+   */
+  200: {
+    enabled: boolean
+    connected: boolean
+    user?: {
+      login: string
+      avatar: string
+      name?: string
+    }
+  }
+}
+
+export type ConnectorMicrosoftDisconnectResponse =
+  ConnectorMicrosoftDisconnectResponses[keyof ConnectorMicrosoftDisconnectResponses]
 
 export type ExperimentalCapabilitiesGetData = {
   body?: never

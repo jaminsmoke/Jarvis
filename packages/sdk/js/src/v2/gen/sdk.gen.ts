@@ -24,6 +24,36 @@ import type {
   ConfigProvidersResponses,
   ConfigUpdateErrors,
   ConfigUpdateResponses,
+  ConnectorGithubDeviceErrors,
+  ConnectorGithubDeviceResponses,
+  ConnectorGithubDisconnectErrors,
+  ConnectorGithubDisconnectResponses,
+  ConnectorGithubPollErrors,
+  ConnectorGithubPollResponses,
+  ConnectorGithubSetEnabledErrors,
+  ConnectorGithubSetEnabledResponses,
+  ConnectorGithubStatusErrors,
+  ConnectorGithubStatusResponses,
+  ConnectorGoogleDeviceErrors,
+  ConnectorGoogleDeviceResponses,
+  ConnectorGoogleDisconnectErrors,
+  ConnectorGoogleDisconnectResponses,
+  ConnectorGooglePollErrors,
+  ConnectorGooglePollResponses,
+  ConnectorGoogleSetEnabledErrors,
+  ConnectorGoogleSetEnabledResponses,
+  ConnectorGoogleStatusErrors,
+  ConnectorGoogleStatusResponses,
+  ConnectorMicrosoftDeviceErrors,
+  ConnectorMicrosoftDeviceResponses,
+  ConnectorMicrosoftDisconnectErrors,
+  ConnectorMicrosoftDisconnectResponses,
+  ConnectorMicrosoftPollErrors,
+  ConnectorMicrosoftPollResponses,
+  ConnectorMicrosoftSetEnabledErrors,
+  ConnectorMicrosoftSetEnabledResponses,
+  ConnectorMicrosoftStatusErrors,
+  ConnectorMicrosoftStatusResponses,
   EventSubscribeResponses,
   EventTuiCommandExecute,
   EventTuiPromptAppend,
@@ -1510,6 +1540,310 @@ export class Config2 extends HeyApiClient {
       ...options,
       ...params,
     })
+  }
+}
+
+export class Github extends HeyApiClient {
+  /**
+   * Get GitHub connector status
+   *
+   * Whether the GitHub connector is enabled and connected, and which user is linked.
+   */
+  public status<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).get<
+      ConnectorGithubStatusResponses,
+      ConnectorGithubStatusErrors,
+      ThrowOnError
+    >({ url: "/connector/github/status", ...options })
+  }
+
+  /**
+   * Enable or disable the GitHub connector
+   *
+   * Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).
+   */
+  public setEnabled<ThrowOnError extends boolean = false>(
+    parameters?: {
+      enabled?: boolean
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "enabled" }] }])
+    return (options?.client ?? this.client).post<
+      ConnectorGithubSetEnabledResponses,
+      ConnectorGithubSetEnabledErrors,
+      ThrowOnError
+    >({
+      url: "/connector/github/set-enabled",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Start a GitHub device-flow authorization
+   *
+   * Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.
+   */
+  public device<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorGithubDeviceResponses,
+      ConnectorGithubDeviceErrors,
+      ThrowOnError
+    >({ url: "/connector/github/device", ...options })
+  }
+
+  /**
+   * Poll the GitHub device-flow attempt
+   *
+   * Polls until the user authorizes. On success the server stores the token and returns the linked user.
+   */
+  public poll<ThrowOnError extends boolean = false>(
+    parameters?: {
+      sessionId?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "sessionId" }] }])
+    return (options?.client ?? this.client).post<ConnectorGithubPollResponses, ConnectorGithubPollErrors, ThrowOnError>(
+      {
+        url: "/connector/github/poll",
+        ...options,
+        ...params,
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+      },
+    )
+  }
+
+  /**
+   * Disconnect the GitHub connector
+   *
+   * Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).
+   */
+  public disconnect<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorGithubDisconnectResponses,
+      ConnectorGithubDisconnectErrors,
+      ThrowOnError
+    >({ url: "/connector/github/disconnect", ...options })
+  }
+}
+
+export class Google extends HeyApiClient {
+  /**
+   * Get Google connector status
+   *
+   * Whether the Google connector is enabled and connected, and which user is linked.
+   */
+  public status<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).get<
+      ConnectorGoogleStatusResponses,
+      ConnectorGoogleStatusErrors,
+      ThrowOnError
+    >({ url: "/connector/google/status", ...options })
+  }
+
+  /**
+   * Enable or disable the Google connector
+   *
+   * Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).
+   */
+  public setEnabled<ThrowOnError extends boolean = false>(
+    parameters?: {
+      enabled?: boolean
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "enabled" }] }])
+    return (options?.client ?? this.client).post<
+      ConnectorGoogleSetEnabledResponses,
+      ConnectorGoogleSetEnabledErrors,
+      ThrowOnError
+    >({
+      url: "/connector/google/set-enabled",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Start a Google device-flow authorization
+   *
+   * Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.
+   */
+  public device<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorGoogleDeviceResponses,
+      ConnectorGoogleDeviceErrors,
+      ThrowOnError
+    >({ url: "/connector/google/device", ...options })
+  }
+
+  /**
+   * Poll the Google device-flow attempt
+   *
+   * Polls until the user authorizes. On success the server stores the token and returns the linked user.
+   */
+  public poll<ThrowOnError extends boolean = false>(
+    parameters?: {
+      sessionId?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "sessionId" }] }])
+    return (options?.client ?? this.client).post<ConnectorGooglePollResponses, ConnectorGooglePollErrors, ThrowOnError>(
+      {
+        url: "/connector/google/poll",
+        ...options,
+        ...params,
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+      },
+    )
+  }
+
+  /**
+   * Disconnect the Google connector
+   *
+   * Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).
+   */
+  public disconnect<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorGoogleDisconnectResponses,
+      ConnectorGoogleDisconnectErrors,
+      ThrowOnError
+    >({ url: "/connector/google/disconnect", ...options })
+  }
+}
+
+export class Microsoft extends HeyApiClient {
+  /**
+   * Get Microsoft connector status
+   *
+   * Whether the Microsoft connector is enabled and connected, and which user is linked.
+   */
+  public status<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).get<
+      ConnectorMicrosoftStatusResponses,
+      ConnectorMicrosoftStatusErrors,
+      ThrowOnError
+    >({ url: "/connector/microsoft/status", ...options })
+  }
+
+  /**
+   * Enable or disable the Microsoft connector
+   *
+   * Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).
+   */
+  public setEnabled<ThrowOnError extends boolean = false>(
+    parameters?: {
+      enabled?: boolean
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "enabled" }] }])
+    return (options?.client ?? this.client).post<
+      ConnectorMicrosoftSetEnabledResponses,
+      ConnectorMicrosoftSetEnabledErrors,
+      ThrowOnError
+    >({
+      url: "/connector/microsoft/set-enabled",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Start a Microsoft device-flow authorization
+   *
+   * Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.
+   */
+  public device<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorMicrosoftDeviceResponses,
+      ConnectorMicrosoftDeviceErrors,
+      ThrowOnError
+    >({ url: "/connector/microsoft/device", ...options })
+  }
+
+  /**
+   * Poll the Microsoft device-flow attempt
+   *
+   * Polls until the user authorizes. On success the server stores the token and returns the linked user.
+   */
+  public poll<ThrowOnError extends boolean = false>(
+    parameters?: {
+      sessionId?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "sessionId" }] }])
+    return (options?.client ?? this.client).post<
+      ConnectorMicrosoftPollResponses,
+      ConnectorMicrosoftPollErrors,
+      ThrowOnError
+    >({
+      url: "/connector/microsoft/poll",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Disconnect the Microsoft connector
+   *
+   * Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).
+   */
+  public disconnect<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<
+      ConnectorMicrosoftDisconnectResponses,
+      ConnectorMicrosoftDisconnectErrors,
+      ThrowOnError
+    >({ url: "/connector/microsoft/disconnect", ...options })
+  }
+}
+
+export class Connector extends HeyApiClient {
+  private _github?: Github
+  get github(): Github {
+    return (this._github ??= new Github({ client: this.client }))
+  }
+
+  private _google?: Google
+  get google(): Google {
+    return (this._google ??= new Google({ client: this.client }))
+  }
+
+  private _microsoft?: Microsoft
+  get microsoft(): Microsoft {
+    return (this._microsoft ??= new Microsoft({ client: this.client }))
   }
 }
 
@@ -7110,6 +7444,11 @@ export class OpencodeClient extends HeyApiClient {
   private _config?: Config2
   get config(): Config2 {
     return (this._config ??= new Config2({ client: this.client }))
+  }
+
+  private _connector?: Connector
+  get connector(): Connector {
+    return (this._connector ??= new Connector({ client: this.client }))
   }
 
   private _tool?: Tool

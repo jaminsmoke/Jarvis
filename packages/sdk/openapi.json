@@ -810,6 +810,1359 @@
         ]
       }
     },
+    "/connector/github/status": {
+      "get": {
+        "tags": ["connector"],
+        "operationId": "connector.github.status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GitHub connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "GitHub connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Whether the GitHub connector is enabled and connected, and which user is linked.",
+        "summary": "Get GitHub connector status",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.github.status({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/github/set-enabled": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.github.setEnabled",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GitHub connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "GitHub connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).",
+        "summary": "Enable or disable the GitHub connector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["enabled"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.github.setEnabled({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/github/device": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.github.device",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow authorization start",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "userCode": {
+                      "type": "string"
+                    },
+                    "verificationUri": {
+                      "type": "string"
+                    },
+                    "interval": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    },
+                    "expiresIn": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["sessionId", "userCode", "verificationUri", "interval", "expiresIn"],
+                  "additionalProperties": false,
+                  "description": "Device-flow authorization start"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.",
+        "summary": "Start a GitHub device-flow authorization",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.github.device({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/github/poll": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.github.poll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow poll result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["success"]
+                        },
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "login": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["login", "avatar"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": ["status", "user"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["pending"]
+                        },
+                        "slowDown": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["expired"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["denied"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["error"]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["status", "message"],
+                      "additionalProperties": false
+                    }
+                  ],
+                  "description": "Device-flow poll result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Polls until the user authorizes. On success the server stores the token and returns the linked user.",
+        "summary": "Poll the GitHub device-flow attempt",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["sessionId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.github.poll({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/github/disconnect": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.github.disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "GitHub connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "GitHub connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).",
+        "summary": "Disconnect the GitHub connector",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.github.disconnect({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/google/status": {
+      "get": {
+        "tags": ["connector"],
+        "operationId": "connector.google.status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Google connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Google connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Whether the Google connector is enabled and connected, and which user is linked.",
+        "summary": "Get Google connector status",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.google.status({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/google/set-enabled": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.google.setEnabled",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Google connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Google connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).",
+        "summary": "Enable or disable the Google connector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["enabled"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.google.setEnabled({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/google/device": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.google.device",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow authorization start",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "userCode": {
+                      "type": "string"
+                    },
+                    "verificationUri": {
+                      "type": "string"
+                    },
+                    "interval": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    },
+                    "expiresIn": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["sessionId", "userCode", "verificationUri", "interval", "expiresIn"],
+                  "additionalProperties": false,
+                  "description": "Device-flow authorization start"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.",
+        "summary": "Start a Google device-flow authorization",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.google.device({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/google/poll": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.google.poll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow poll result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["success"]
+                        },
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "login": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["login", "avatar"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": ["status", "user"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["pending"]
+                        },
+                        "slowDown": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["expired"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["denied"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["error"]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["status", "message"],
+                      "additionalProperties": false
+                    }
+                  ],
+                  "description": "Device-flow poll result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Polls until the user authorizes. On success the server stores the token and returns the linked user.",
+        "summary": "Poll the Google device-flow attempt",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["sessionId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.google.poll({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/google/disconnect": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.google.disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Google connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Google connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).",
+        "summary": "Disconnect the Google connector",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.google.disconnect({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/microsoft/status": {
+      "get": {
+        "tags": ["connector"],
+        "operationId": "connector.microsoft.status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Microsoft connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Microsoft connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Whether the Microsoft connector is enabled and connected, and which user is linked.",
+        "summary": "Get Microsoft connector status",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.microsoft.status({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/microsoft/set-enabled": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.microsoft.setEnabled",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Microsoft connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Microsoft connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Toggles the connector Switch. Disabling keeps the stored token (re-enabling is instant).",
+        "summary": "Enable or disable the Microsoft connector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["enabled"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.microsoft.setEnabled({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/microsoft/device": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.microsoft.device",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow authorization start",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "userCode": {
+                      "type": "string"
+                    },
+                    "verificationUri": {
+                      "type": "string"
+                    },
+                    "interval": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    },
+                    "expiresIn": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["NaN"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["-Infinity"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["Infinity", "-Infinity", "NaN"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["sessionId", "userCode", "verificationUri", "interval", "expiresIn"],
+                  "additionalProperties": false,
+                  "description": "Device-flow authorization start"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Starts RFC 8628 device flow and returns the user code to display. The device_code stays server-side.",
+        "summary": "Start a Microsoft device-flow authorization",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.microsoft.device({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/microsoft/poll": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.microsoft.poll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Device-flow poll result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["success"]
+                        },
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "login": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["login", "avatar"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": ["status", "user"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["pending"]
+                        },
+                        "slowDown": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["expired"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["denied"]
+                        }
+                      },
+                      "required": ["status"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["error"]
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["status", "message"],
+                      "additionalProperties": false
+                    }
+                  ],
+                  "description": "Device-flow poll result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ConnectorApiError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectorApiError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Polls until the user authorizes. On success the server stores the token and returns the linked user.",
+        "summary": "Poll the Microsoft device-flow attempt",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["sessionId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.microsoft.poll({\n  ...\n})"
+          }
+        ]
+      }
+    },
+    "/connector/microsoft/disconnect": {
+      "post": {
+        "tags": ["connector"],
+        "operationId": "connector.microsoft.disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Microsoft connector status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "connected": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "login": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["login", "avatar"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["enabled", "connected"],
+                  "additionalProperties": false,
+                  "description": "Microsoft connector status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestError"
+                }
+              }
+            }
+          }
+        },
+        "description": "Removes the stored token and disconnects the account. The connector resets to disabled (the token is the single source of truth server-side).",
+        "summary": "Disconnect the Microsoft connector",
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.connector.microsoft.disconnect({\n  ...\n})"
+          }
+        ]
+      }
+    },
     "/experimental/capabilities": {
       "get": {
         "tags": ["experimental"],
@@ -21858,6 +23211,26 @@
         "required": ["id", "name", "source", "env", "options", "models"],
         "additionalProperties": false
       },
+      "ConnectorApiError": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": ["BadRequest"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["name", "data"],
+        "additionalProperties": false
+      },
       "ExperimentalCapabilities": {
         "type": "object",
         "properties": {
@@ -36812,6 +38185,10 @@
     {
       "name": "config",
       "description": "Experimental HttpApi config routes."
+    },
+    {
+      "name": "connector",
+      "description": "External service connectors proxied through the Jarvis server (web support)."
     },
     {
       "name": "experimental",
