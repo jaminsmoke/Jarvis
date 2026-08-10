@@ -146,6 +146,20 @@ export function useConnector(def: ConnectorDefinition) {
     setPolling(false)
   }
 
+  /** Disconnect and immediately restart the device flow. */
+  async function reconnect() {
+    const connector = api()
+    if (!connector) return
+    setError(null)
+    try {
+      await connector.disconnect()
+      setStatus({ enabled: true, connected: false })
+      await startConnect()
+    } catch {
+      setError("generic")
+    }
+  }
+
   /** Revoke the stored token and disconnect the account. */
   async function disconnect() {
     const connector = api()
@@ -170,6 +184,7 @@ export function useConnector(def: ConnectorDefinition) {
     startConnect,
     cancelConnect,
     disconnect,
+    reconnect,
   }
 }
 

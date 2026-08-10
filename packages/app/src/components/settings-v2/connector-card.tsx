@@ -1,4 +1,4 @@
-import { Component, Show } from "solid-js"
+import { Component, For, Show } from "solid-js"
 import { Icon } from "@opencode-ai/ui/icon"
 import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { Switch } from "@opencode-ai/ui/v2/switch-v2"
@@ -16,6 +16,7 @@ export const ConnectorCard: Component<{
 
   const name = () => language.t(`${props.def.i18nPrefix}.name`)
   const summary = () => language.t(`${props.def.i18nPrefix}.summary`)
+  const toolCount = () => (props.def.tools?.length ?? 0)
 
   return (
     <div
@@ -63,6 +64,11 @@ export const ConnectorCard: Component<{
                   ? language.t("settings.connectors.badge.notConnected")
                   : language.t("settings.connectors.badge.disabled")}
           </span>
+          <Show when={props.status.connected && toolCount() > 0}>
+            <span data-slot="connector-card-badge" class="is-tools">
+              {toolCount()} {language.t("settings.connectors.badge.tools")}
+            </span>
+          </Show>
         </div>
         <div data-slot="connector-card-description">
           <Show when={props.status.connected && props.status.user} fallback={summary()}>

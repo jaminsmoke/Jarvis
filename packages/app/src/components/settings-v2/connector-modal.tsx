@@ -1,4 +1,4 @@
-import { Component, Show, createMemo } from "solid-js"
+import { Component, For, Show, createMemo } from "solid-js"
 import { Icon } from "@opencode-ai/ui/icon"
 import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
@@ -74,6 +74,33 @@ export const ConnectorModal: Component<{
             )}
           </Show>
 
+          {/* Capabilities / Tools list */}
+          <Show when={props.def.tools && props.def.tools.length > 0}>
+            <div data-slot="connector-modal-capabilities">
+              <h4 data-slot="connector-modal-capabilities-title">Capabilities</h4>
+              <div data-slot="connector-modal-capabilities-list">
+                <For each={props.def.tools}>
+                  {(tool) => (
+                    <div data-slot="connector-modal-tool">
+                      <span data-slot="connector-modal-tool-name">{tool.name}</span>
+                      <span data-slot="connector-modal-tool-desc">{tool.description}</span>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </div>
+          </Show>
+
+          {/* Coming soon for connectors without tools */}
+          <Show when={!props.def.disabled && !props.def.tools?.length}>
+            <div data-slot="connector-modal-capabilities">
+              <h4 data-slot="connector-modal-capabilities-title">Capabilities</h4>
+              <p data-slot="connector-modal-coming-soon">
+                {language.t("settings.connectors.badge.comingSoon")} &mdash; tools will appear here once available.
+              </p>
+            </div>
+          </Show>
+
           {/* Device flow in progress */}
           <Show when={device()}>
             {(flow) => (
@@ -130,9 +157,14 @@ export const ConnectorModal: Component<{
                 </ButtonV2>
               }
             >
-              <ButtonV2 variant="danger" onClick={() => void connector.disconnect()}>
-                {language.t(`${prefix}.disconnect`)}
-              </ButtonV2>
+              <div data-slot="connector-modal-flow-actions">
+                <ButtonV2 variant="danger" onClick={() => void connector.disconnect()}>
+                  {language.t(`${prefix}.disconnect`)}
+                </ButtonV2>
+                <ButtonV2 variant="neutral" onClick={() => void connector.reconnect()}>
+                  {language.t("settings.connectors.reconnect")}
+                </ButtonV2>
+              </div>
             </Show>
           }
         >

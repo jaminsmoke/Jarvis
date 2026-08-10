@@ -998,3 +998,71 @@
 [data-component="connector-modal"] + [data-slot="dialog-footer"] {
   justify-content: space-between;
 }
+
+/* Tools badge on card */
+[data-slot="connector-card-badge"].is-tools {
+  color: var(--v2-state-fg-success);
+  background: var(--v2-state-bg-success);
+}
+
+/* Capabilities section in modal */
+[data-slot="connector-modal-capabilities"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-slot="connector-modal-capabilities-title"] {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 560;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--v2-text-text-muted);
+}
+
+[data-slot="connector-modal-capabilities-list"] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--v2-border-border-default);
+  border-radius: 8px;
+  background: var(--v2-background-bg-hover);
+}
+
+[data-slot="connector-modal-tool"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+[data-slot="connector-modal-tool"]:not(:last-child) {
+  border-bottom: 0.5px solid var(--v2-border-border-base);
+  padding-bottom: 8px;
+}
+
+[data-slot="connector-modal-tool-name"] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  font-weight: 550;
+  color: var(--v2-text-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+[data-slot="connector-modal-tool-desc"] {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--v2-text-text-muted);
+}
+
+[data-slot="connector-modal-coming-soon"] {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--v2-text-text-muted);
+  font-style: italic;
+}

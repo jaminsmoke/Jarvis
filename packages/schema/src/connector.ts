@@ -115,6 +115,8 @@ export type ConnectorDefinition = {
   i18nPrefix: string
   /** Full i18n keys of the permission bullets shown in the connect modal. */
   permissions: string[]
+  /** Tools provided by this connector (shown in the UI when connected). */
+  tools?: { name: string; description: string }[]
 }
 
 /** GitHub (dev) — the original connector, restored with OAuth App Ov23lih... */
@@ -145,6 +147,11 @@ const github: ConnectorDefinition = {
   permissions: [
     "settings.connectors.github.permission.repos",
     "settings.connectors.github.permission.profile",
+  ],
+  tools: [
+    { name: "github_list_repos", description: "List your GitHub repositories" },
+    { name: "github_read_issue", description: "Read a GitHub issue or pull request" },
+    { name: "github_search_code", description: "Search code across your repositories" },
   ],
 }
 
