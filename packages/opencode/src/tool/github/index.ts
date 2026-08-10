@@ -1,11 +1,13 @@
 export * as GithubTools from "./index"
 
 import { ToolFailure } from "@opencode-ai/llm"
-import { Effect, Layer, Scope } from "effect"
+import { Context, Effect, Layer, Scope } from "effect"
 import { HttpClient } from "effect/unstable/http"
 import { Credential } from "@opencode-ai/core/credential"
 import { Integration } from "@opencode-ai/schema/integration"
 import { ApplicationTools } from "@opencode-ai/core/tool/application-tools"
+import { makeGlobalNode } from "@opencode-ai/core/effect/app-node"
+import { httpClient } from "@opencode-ai/core/effect/app-node-platform"
 import { make as listRepos } from "./list-repos"
 import { make as readIssue } from "./read-issue"
 import { make as searchCode } from "./search-code"
@@ -77,3 +79,13 @@ const registerEffect = Effect.gen(function* () {
  * ApplicationTools.Service in the Effect runtime before executing this effect.
  */
 export const registerGithubTools = registerEffect
+
+class GithubToolsService extends Context.Service<GithubToolsService, void>()("@opencode/v2/GithubTools") {}
+
+const initLayer = Layer.effect(GithubToolsService, registerEffect)
+
+export const node = makeGlobalNode({
+  service: GithubToolsService,
+  layer: initLayer,
+  deps: [Credential.node, ApplicationTools.node, httpClient],
+})

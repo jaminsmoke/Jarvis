@@ -111,6 +111,8 @@ import { workspaceHandlers } from "./handlers/workspace"
 import { instanceContextLayer } from "./middleware/instance-context"
 import { workspaceRoutingLayer } from "./middleware/workspace-routing"
 import { disposeMiddleware } from "./lifecycle"
+import { ApplicationTools } from "@opencode-ai/core/tool/application-tools"
+import { node as githubToolsNode } from "@/tool/github"
 import { memoMap } from "@opencode-ai/core/effect/memo-map"
 import { compressionLayer } from "./middleware/compression"
 import { corsVaryFix } from "./middleware/cors-vary"
@@ -264,6 +266,8 @@ const app = LayerNode.group([
   ShareNext.node,
   SessionShare.node,
   InstanceStore.node,
+  ApplicationTools.node,
+  githubToolsNode,
   httpClient,
   EventV2.node,
   ProjectV2.node,
@@ -308,6 +312,7 @@ export function createRoutes(
     Layer.provide(locationServiceMapV2),
 
     Layer.provide(AppNodeBuilderV1.build(app)),
+
     // Must stay last: layers provided later in this pipe build beneath earlier ones,
     // so Observability must come after every service graph. Otherwise eagerly forked
     // fibers (e.g. the ModelsDev background refresh) capture Effect's default stdout
