@@ -123,7 +123,8 @@ export type ConnectorDefinition = {
 const github: ConnectorDefinition = {
   id: "github",
   clientId: "Ov23lih4N28LiBwVzv7X",
-  scopes: "repo,user",
+  // Least privilege for read-only MVP — no write access to any repo.
+  scopes: "public_repo,read:user",
   deviceCodeUrl: "https://github.com/login/device/code",
   tokenUrl: "https://github.com/login/oauth/access_token",
   apiBaseUrl: "https://api.github.com",
@@ -167,6 +168,7 @@ const google: ConnectorDefinition = {
   clientId: "878214801933-dcbah6u5mb6gpnvmlotto6pv1nk1pc5p.apps.googleusercontent.com",
   // clientSecret read at runtime from GOOGLE_CLIENT_SECRET env var — see
   // connectors.ts (desktop) and connector.ts (server handler).
+  // drive.readonly deferred to v0.3.0 (no Drive tools yet).
   scopes: "openid email profile",
   deviceCodeUrl: "https://oauth2.googleapis.com/device/code",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -185,8 +187,9 @@ const google: ConnectorDefinition = {
   icon: "google",
   providerIcon: "google",
   i18nPrefix: "settings.connectors.google",
+  // Permissions reflect actual scopes requested — drive is NOT yet included.
+  // When drive.readonly scope is added (v0.3.0), re-add the drive permission key here.
   permissions: [
-    "settings.connectors.google.permission.drive",
     "settings.connectors.google.permission.profile",
   ],
 }
