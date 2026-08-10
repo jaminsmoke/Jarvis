@@ -302,7 +302,9 @@ const main = Effect.gen(function* () {
     isFirstLaunchOnboardingPending,
     finishFirstLaunchOnboarding,
     isOldLayoutEligible,
+    // TODO(#46): implement with ELECTRON_OZONE_PLATFORM_HINT env var (Linux Wayland support)
     getDisplayBackend: async () => null,
+    // TODO(#46): implement with ELECTRON_OZONE_PLATFORM_HINT env var (Linux Wayland support)
     setDisplayBackend: async () => undefined,
     checkAppExists: (appName) => checkAppExists(appName),
     resolveAppPath: async (appName) => resolveAppPath(appName),

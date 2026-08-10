@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process"
 import { userInfo } from "node:os"
 import { basename } from "node:path"
+import log from "electron-log/main.js"
 
 const TIMEOUT = 5_000
 
@@ -43,18 +44,18 @@ function probe(shell: string, mode: "-il" | "-l"): Probe {
   const err = out.error as NodeJS.ErrnoException | undefined
   if (err) {
     if (err.code === "ETIMEDOUT") return { type: "Timeout" }
-    console.log(`[server] Shell env probe failed for ${shell} ${mode}: ${err.message}`)
+    log.warn(`Shell env probe failed for ${shell} ${mode}: ${err.message}`)
     return { type: "Unavailable" }
   }
 
   if (out.status !== 0) {
-    console.log(`[server] Shell env probe exited with non-zero status for ${shell} ${mode}`)
+    log.warn(`Shell env probe exited with non-zero status for ${shell} ${mode}`)
     return { type: "Unavailable" }
   }
 
   const env = parseShellEnv(out.stdout)
   if (Object.keys(env).length === 0) {
-    console.log(`[server] Shell env probe returned empty env for ${shell} ${mode}`)
+    log.warn(`Shell env probe returned empty env for ${shell} ${mode}`)
     return { type: "Unavailable" }
   }
 
