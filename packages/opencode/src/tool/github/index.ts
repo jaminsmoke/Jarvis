@@ -1,7 +1,8 @@
 export * as GithubTools from "./index"
 
 import { ToolFailure } from "@opencode-ai/llm"
-import { Effect, Scope } from "effect"
+import { Effect, Layer, Scope } from "effect"
+import { HttpClient } from "effect/unstable/http"
 import { Credential } from "@opencode-ai/core/credential"
 import { Integration } from "@opencode-ai/schema/integration"
 import { ApplicationTools } from "@opencode-ai/core/tool/application-tools"
@@ -46,8 +47,9 @@ function resolveGithubToken(): Effect.Effect<string, ToolFailure, Credential.Ser
   })
 }
 
-export const registerGithubTools = Effect.gen(function* () {
+const registerEffect = Effect.gen(function* () {
   const apps = yield* ApplicationTools.Service
+  const http = yield* HttpClient.HttpClient
 
   const tokenResult = yield* resolveGithubToken().pipe(
     Effect.match({
@@ -58,16 +60,20 @@ export const registerGithubTools = Effect.gen(function* () {
 
   if (!tokenResult) return
 
-  yield* Effect.scoped(
-    Effect.gen(function* () {
-      const token = Effect.succeed(tokenResult)
-      yield* apps.register({
-        github_list_repos: listRepos(token),
-        github_read_issue: readIssue(token),
-        github_search_code: searchCode(token),
-      }).pipe(Effect.orDie)
-    }),
-  )
-}).pipe(
-  Effect.provideService(Scope.Scope, Scope.makeUnsafe()),
-)
+  const token = Effect.succeed(tokenResult)
+
+  yield* apps.register({
+    github_list_repos: listRepos(token, http),
+    github_read_issue: readIssue(token, http),
+    github_search_code: searchCode(token, http),
+  }).pipe(Effect.orDie)
+})
+
+/**
+ * Registers GitHub read-only tools as ApplicationTools (global, not per-session).
+ * If GitHub is not connected, registration is skipped silently.
+ *
+ * The caller is responsible for providing Credential.Service, HttpClient, and
+ * ApplicationTools.Service in the Effect runtime before executing this effect.
+ */
+export const registerGithubTools = registerEffect

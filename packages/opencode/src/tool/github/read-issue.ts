@@ -2,7 +2,9 @@ export * as GithubReadIssueTool from "./read-issue"
 
 import { ToolFailure } from "@opencode-ai/llm"
 import { Effect, Schema } from "effect"
+import { HttpClient } from "effect/unstable/http"
 import { Tool } from "@opencode-ai/core/tool/tool"
+import { githubGet } from "./common"
 
 export const name = "github_read_issue"
 
@@ -21,23 +23,23 @@ export const Input = Schema.Struct({
 })
 
 export const Output = Schema.Struct({
-  title: Schema.String.annotate({ description: "Issue title" }),
-  body: Schema.optional(Schema.String).annotate({ description: "Issue body (markdown, truncated at 30k chars)" }),
-  state: Schema.String.annotate({ description: "open or closed" }),
-  author: Schema.String.annotate({ description: "GitHub login of the author" }),
-  labels: Schema.Array(Schema.String).annotate({ description: "Label names" }),
-  comments: Schema.Number.annotate({ description: "Number of comments" }),
-  is_pr: Schema.Boolean.annotate({ description: "True if this is a pull request" }),
-  html_url: Schema.String.annotate({ description: "Browser URL for the issue" }),
+  title: Schema.String,
+  body: Schema.optional(Schema.String).annotate({ description: "Issue body (truncated at 30k chars)" }),
+  state: Schema.String,
+  author: Schema.String,
+  labels: Schema.Array(Schema.String),
+  comments: Schema.Number,
+  is_pr: Schema.Boolean,
+  html_url: Schema.String,
 })
 
-export function make(token: Effect.Effect<string, ToolFailure>) {
+export function make(token: Effect.Effect<string, ToolFailure>, http: HttpClient.HttpClient) {
   return Tool.make({
     description,
     input: Input,
     output: Output,
     toModelOutput: ({ output }) => [
-      { type: "text", text: `## ${output.title} (#${output.is_pr ? "PR" : "Issue"})\n` +
+      { type: "text", text: `## ${output.title} (${output.is_pr ? "PR" : "Issue"})\n` +
         `**Author**: ${output.author} | **State**: ${output.state} | **Labels**: ${output.labels.join(", ") || "none"}\n` +
         `**Comments**: ${output.comments} | **URL**: ${output.html_url}\n\n${output.body ?? "(no description)"}` },
     ],
@@ -47,34 +49,12 @@ export function make(token: Effect.Effect<string, ToolFailure>) {
 
         const url = `https://api.github.com/repos/${encodeURIComponent(input.owner)}/${encodeURIComponent(input.repo)}/issues/${input.number}`
 
-        const response = yield* Effect.tryPromise({
-          try: () =>
-            fetch(url, {
-              headers: {
-                Accept: "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }),
-          catch: (err) => new ToolFailure({ message: `GitHub API unreachable: ${String(err)}` }),
-        })
-
-        if (response.status === 404) {
-          return yield* Effect.fail(
-            new ToolFailure({ message: `Issue #${input.number} not found in ${input.owner}/${input.repo}` }),
-          )
-        }
-
-        if (!response.ok) {
-          return yield* Effect.fail(
-            new ToolFailure({ message: `GitHub API error ${response.status}: ${response.statusText}` }),
-          )
-        }
-
-        const data = (yield* Effect.tryPromise({
-          try: () => response.json() as Promise<Record<string, unknown>>,
-          catch: (err) => new ToolFailure({ message: `Failed to parse GitHub response: ${String(err)}` }),
-        }))!
+        const data = (yield* (githubGet(http, url.toString(), accessToken).pipe(
+          Effect.catchIf(
+            (e) => e instanceof ToolFailure && e.message.includes("404"),
+            () => Effect.fail(new ToolFailure({ message: `Issue #${input.number} not found in ${input.owner}/${input.repo}` })),
+          ),
+        ))) as Record<string, unknown>
 
         const body = String(data.body ?? "")
         const MAX_BODY = 30_000

@@ -2,7 +2,9 @@ export * as GithubSearchCodeTool from "./search-code"
 
 import { ToolFailure } from "@opencode-ai/llm"
 import { Effect, Schema } from "effect"
+import { HttpClient } from "effect/unstable/http"
 import { Tool } from "@opencode-ai/core/tool/tool"
+import { githubGet, SEARCH_ACCEPT } from "./common"
 
 export const name = "github_search_code"
 
@@ -14,7 +16,7 @@ Uses GitHub's code search API. The query syntax supports:
 - Repo filter: "repo:owner/name" — search within a specific repository.
 - Path filter: "path:src/" — restrict to files under a path.
 
-Results include the repository, file path, and a snippet of matching code.
+Results include the repository, file path, and a matching code snippet.
 Rate limit: authenticated users get 30 requests per minute for search.`
 
 export const Input = Schema.Struct({
@@ -24,25 +26,25 @@ export const Input = Schema.Struct({
   language: Schema.optional(Schema.String).annotate({
     description: "Filter by language (e.g. typescript, python, rust)",
   }),
-  limit: Schema.optional(
-    Schema.Number,
-  ).annotate({ description: "Maximum results to return (1–20, default: 10)" }),
+  limit: Schema.optional(Schema.Number).annotate({
+    description: "Maximum results to return (1–20, default: 10)",
+  }),
 })
 
 const CodeResult = Schema.Struct({
-  repo: Schema.String.annotate({ description: "owner/repo where the match was found" }),
-  path: Schema.String.annotate({ description: "File path within the repo" }),
-  language: Schema.optional(Schema.String).annotate({ description: "Detected language" }),
-  snippet: Schema.String.annotate({ description: "Matching code fragment (1–3 lines)" }),
-  html_url: Schema.String.annotate({ description: "Browser URL to the file at the matching line" }),
+  repo: Schema.String,
+  path: Schema.String,
+  language: Schema.optional(Schema.String),
+  snippet: Schema.String,
+  html_url: Schema.String,
 })
 
 export const Output = Schema.Struct({
-  results: Schema.Array(CodeResult).annotate({ description: "Matching code results" }),
-  total_count: Schema.Number.annotate({ description: "Total matches (API may cap at 1000)" }),
+  results: Schema.Array(CodeResult),
+  total_count: Schema.Number,
 })
 
-export function make(token: Effect.Effect<string, ToolFailure>) {
+export function make(token: Effect.Effect<string, ToolFailure>, http: HttpClient.HttpClient) {
   return Tool.make({
     description,
     input: Input,
@@ -60,7 +62,7 @@ export function make(token: Effect.Effect<string, ToolFailure>) {
     execute: (input) =>
       Effect.gen(function* () {
         const accessToken = yield* token
-        const limit = input.limit ?? 10
+        const limit = Math.min(Math.max(input.limit ?? 10, 1), 20)
 
         let q = input.query
         if (input.language) q += ` language:${input.language}`
@@ -69,47 +71,23 @@ export function make(token: Effect.Effect<string, ToolFailure>) {
         url.searchParams.set("q", q)
         url.searchParams.set("per_page", String(limit))
 
-        const response = yield* Effect.tryPromise({
-          try: () =>
-            fetch(url.toString(), {
-              headers: {
-                Accept: "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }),
-          catch: (err) => new ToolFailure({ message: `GitHub API unreachable: ${String(err)}` }),
-        })
-
-        if (response.status === 403 && response.headers.get("x-ratelimit-remaining") === "0") {
-          return yield* Effect.fail(
-            new ToolFailure({ message: "GitHub search rate limit exceeded. Wait before retrying." }),
-          )
-        }
-
-        if (response.status === 422) {
-          return yield* Effect.fail(
-            new ToolFailure({ message: `GitHub search query invalid: ${input.query}` }),
-          )
-        }
-
-        if (!response.ok) {
-          return yield* Effect.fail(
-            new ToolFailure({ message: `GitHub API error ${response.status}: ${response.statusText}` }),
-          )
-        }
-
-        const data = (yield* Effect.tryPromise({
-          try: () => response.json() as Promise<{ items: any[]; total_count: number }>,
-          catch: (err) => new ToolFailure({ message: `Failed to parse GitHub response: ${String(err)}` }),
-        }))!
+        const data = (yield* (githubGet(
+          http, url.toString(), accessToken, SEARCH_ACCEPT,
+        ).pipe(
+          Effect.catchIf(
+            (e) => e instanceof ToolFailure && e.message.includes("422"),
+            () => Effect.fail(new ToolFailure({ message: `GitHub search query invalid: ${input.query}` })),
+          ),
+        ))) as { items: any[]; total_count: number }
 
         return {
           results: (data.items ?? []).map((item: any) => ({
             repo: String(item.repository?.full_name ?? "unknown"),
             path: String(item.path ?? ""),
             language: item.repository?.language ? String(item.repository.language) : undefined,
-            snippet: String(item.text_matches?.[0]?.fragment ?? item.name ?? ""),
+            snippet: String(
+              item.text_matches?.[0]?.fragment ?? item.name ?? "",
+            ),
             html_url: String(item.html_url ?? ""),
           })),
           total_count: Number(data.total_count ?? 0),
