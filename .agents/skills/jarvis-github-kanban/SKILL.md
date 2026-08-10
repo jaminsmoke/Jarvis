@@ -105,7 +105,7 @@ Project Settings → Fields → + New field. Estructura recomendada:
 | **Status** | SingleSelect | Detectado, Debate, Roadmap, Ejecutando, Verificando, Changelog |
 | **Versión** | SingleSelect | Sin asignar, v0.1.0, ... |
 | **Prioridad** | SingleSelect | Alta, Media, Baja |
-| **Decisión** | SingleSelect | Pendiente, Aprobado, Diferido, Cancelado |
+| **Decision** | SingleSelect | Pendiente, Aprobado, Diferido, Cancelado |
 | **Tipo** | SingleSelect | Bug, Feature, Maintenance, Security, Decision |
 | **Área principal** | SingleSelect | Adaptar al proyecto — ej: App, Desktop, Core, Server, CI, Infra, Docs, Lint, Dependencies, Release, Governance, Upstream |
 | **HighLighted** | SingleSelect | Yes, No |
@@ -118,11 +118,27 @@ Campos Date: **Inicio**, **Completado**. Campos Text: **Inicio exacto**, **Compl
 
 ### 4. Configurar la vista Kanban
 
-En la vista principal — **solo UI, no hay API**:
-- **Layout**: Board
+La API GraphQL expone mutaciones completas para vistas: crear, renombrar, cambiar layout y configurar campos visibles.
+
+```bash
+# Crear vista nueva con campos visibles configurados
+bun kanban create-view --name "Kanban" --layout BOARD_LAYOUT \
+  --visible-fields "Status,Versión,Prioridad,Decision,Tipo,Área principal,HighLighted"
+
+# Bajo nivel (GraphQL):
+# createProjectV2View(projectId, name, layout: BOARD_LAYOUT,
+#   configuration: { visibleFieldIds: [...] })
+```
+
+**Por API** (mutaciones GraphQL disponibles):
+- `createProjectV2View` ✅: layout (BOARD/TABLE/ROADMAP) + `visibleFieldIds`
+- `updateProjectV2View` ✅: renombrar, cambiar layout, actualizar campos visibles
+- `deleteProjectV2View` ✅: borrar vistas (no la última)
+
+**Solo UI** (no expuesto en GraphQL):
 - **Group by**: Status
 - **Sort**: manual (drag & drop)
-- **Visible fields**: Title, Status, Versión, Prioridad, Tipo, Área principal
+- **Workflow**: habilitar "Auto-close issue" para Changelog→Done (el workflow existe pre-creado pero no hay mutación `enable`)
 
 ### 5. Workflow de estados
 
@@ -154,13 +170,44 @@ bun kanban convert-draft <itemId>
 bun kanban move <itemId> [--after <afterId>]
 bun kanban archive <itemId>
 bun kanban unarchive <itemId>
+bun kanban delete <itemId> [más IDs...] [--yes]      # ⚠️ IRREVERSIBLE: requiere --yes
+bun kanban delete --status <estado> [--yes]          # ⚠️ borra todos los items de un status
 bun kanban clear-field <itemId> --field-id "<FIELD_ID>"
+
+# Gestionar vistas
+bun kanban create-view --name "..." [--layout BOARD_LAYOUT] [--visible-fields "Status,Versión,..."]
 
 # Generar .kanbanrc.json con los IDs del proyecto
 bun kanban config generate --project <PROJECT_ID>
 ```
 
 Si la CLI no está disponible, usar `gh api graphql` con las queries documentadas abajo.
+
+---
+
+## Borrado definitivo de items (delete) ⚠️ IRREVERSIBLE
+
+> **Diferencia clave**: `archive` es **soft delete** (recuperable con `unarchive`). `delete` elimina el item del proyecto **definitivamente** — no se puede deshacer.
+
+```bash
+# Borrar UN item (requiere --yes obligatorio)
+bun kanban delete <itemId> --yes
+
+# Borrar VARIOS items a la vez (IDs posicionales)
+bun kanban delete <itemId1> <itemId2> --yes
+
+# Borrar TODOS los items de un status (resuelve IDs automáticamente)
+bun kanban delete --status Detectado --yes
+```
+
+### Salvaguardas (siempre activas)
+
+1. **Confirmación obligatoria**: sin `--yes` el comando aborta (exit 1) y **nunca borra nada**.
+2. **Siempre muestra el conteo y la lista** antes de pedir confirmación: cada item con su título, ID y tag `[Draft]` o `[Issue]`.
+3. **⚠️ Items que son Issues reales**: `deleteProjectV2Item` los **desvincula del proyecto pero NO cierra ni borra el Issue de GitHub** — el CLI lo advierte explícitamente. Si se quiere cerrar el Issue también, usar `gh issue close` por separado.
+4. **Probar siempre contra un item de prueba/borrador** antes de borrar items reales.
+
+> 💡 **Regla de uso**: preferir `archive`/`unarchive` para limpieza reversible. Usar `delete` solo para items basura/erróneos que no deben existir (p. ej. drafts duplicados o de prueba).
 
 ---
 
@@ -252,9 +299,9 @@ bun kanban body <itemId> --append "Alternativas" "1. Opción A: ...\n2. Opción 
 ```
 
 Al cerrar el debate:
-- `Decisión: Aprobado` → avanza a Roadmap
-- `Decisión: Cancelado` → documentar motivo, convertir a Issue, cerrar, Changelog
-- `Decisión: Diferido` → documentar motivo y condición, devolver a Detectado
+- `Decision: Aprobado` → avanza a Roadmap
+- `Decision: Cancelado` → documentar motivo, convertir a Issue, cerrar, Changelog
+- `Decision: Diferido` → documentar motivo y condición, devolver a Detectado
 
 ### 3. Roadmap → Planificar
 
@@ -360,7 +407,10 @@ python scripts/kanban-sync.py changelog
 | `convertProjectV2DraftIssueItemToIssue` | itemId, repositoryId | Draft → Issue |
 | `addLabelsToLabelable` | labelableId, labelIds | Añadir labels |
 | `closeIssue` | issueId | Cerrar Issue |
-| `deleteProjectV2Item` | projectId, itemId | Eliminar item |
+| `deleteProjectV2Item` | projectId, itemId | Eliminar item (⚠️ irreversible; CLI: `bun kanban delete ... --yes`) |
+| `createProjectV2View` | projectId, name, layout, configuration | Crear vista |
+| `updateProjectV2View` | viewId, name, layout, configuration | Editar vista |
+| `deleteProjectV2View` | viewId | Borrar vista |
 
 ---
 
