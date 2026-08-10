@@ -163,7 +163,7 @@ jobs:
             fi
           fi
 
-      - name: Build and package (prod, publish to GitHub release)
+      - name: Build and package (prod, sin publicar — gate primero)
         shell: bash
         env:
           JARVIS_CHANNEL: prod
@@ -177,7 +177,28 @@ jobs:
         run: |
           cd packages/desktop
           bun run build
-          bun run package:win -- --publish always
+          bun run package:win -- --publish never
+
+      - name: Smoke test artefacto (gate de release)
+        shell: bash
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          cd packages/desktop
+          bun scripts/smoke.ts --exe dist/jarvis-desktop-win-x64.exe --version "${{ steps.version.outputs.version }}"
+
+      - name: Upload release assets (tras superar el smoke)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          gh release upload "$TAG" \
+            packages/desktop/dist/jarvis-desktop-win-x64.exe \
+            packages/desktop/dist/jarvis-desktop-win-x64.exe.blockmap \
+            packages/desktop/dist/latest.yml \
+            --clobber
 
       - name: Verify release assets (idempotency + completeness)
         shell: bash
