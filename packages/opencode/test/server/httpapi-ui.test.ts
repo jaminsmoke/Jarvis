@@ -187,6 +187,11 @@ describe("HttpApi UI fallback", () => {
     Effect.gen(function* () {
       const response = yield* uiApp({
         disableEmbeddedWebUi: true,
+        client: httpClient(
+          new Response("<html><body>Jarvis</body></html>", {
+            headers: { "content-type": "text/html" },
+          }),
+        ),
       }).request("/")
 
       expect(response.status).toBe(200)
@@ -286,6 +291,11 @@ describe("HttpApi UI fallback", () => {
         password: "secret",
         username: "opencode",
         disableEmbeddedWebUi: true,
+        client: httpClient(
+          new Response("<html><body>Jarvis</body></html>", {
+            headers: { "content-type": "text/html" },
+          }),
+        ),
       }).request(`/?auth_token=${btoa("opencode:secret")}`)
 
       expect(response.status).toBe(200)
