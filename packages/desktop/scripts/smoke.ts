@@ -121,8 +121,16 @@ async function checkLaunch(exePath: string) {
     fail(`No existe el ejecutable ${exePath}`)
     return
   }
-  const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], { stdout: "ignore", stderr: "pipe" })
+  const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], { stdout: "pipe", stderr: "pipe" })
+  const stdout: Buffer[] = []
   const stderr: Buffer[] = []
+  proc.stdout?.pipeTo(
+    new WritableStream({
+      write(chunk: Uint8Array) {
+        stdout.push(Buffer.from(chunk))
+      },
+    }),
+  )
   proc.stderr?.pipeTo(
     new WritableStream({
       write(chunk: Uint8Array) {
@@ -155,11 +163,12 @@ async function checkLaunch(exePath: string) {
   const alive = proc.exitCode === null
 
   if (!healthy) {
-    const tail = Buffer.concat(stderr).toString("utf8").slice(-800)
+    const stderrTail = Buffer.concat(stderr).toString("utf8").slice(-800)
+    const stdoutTail = Buffer.concat(stdout).toString("utf8").slice(-800)
     const reason = alive
       ? "proceso vivo pero el server local no responde en " + HEALTH_URL
       : `proceso terminó con exit code ${proc.exitCode}`
-    fail(`Smoke de arranque falló: ${reason}.\n  stderr tail: ${tail || "(vacío)"}`)
+    fail(`Smoke de arranque falló: ${reason}.\n  stdout tail: ${stdoutTail || "(vacío)"}\n  stderr tail: ${stderrTail || "(vacío)"}`)
   } else {
     pass(`Server local healthy en ${HEALTH_URL}`)
     if (alive) pass("Proceso vivo tras arranque (sin crash)")
