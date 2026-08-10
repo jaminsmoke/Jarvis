@@ -247,6 +247,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
         startDeviceFlow: () => window.api.connector.github.startDeviceFlow(),
         pollDeviceFlow: (sessionId: string) => window.api.connector.github.pollDeviceFlow(sessionId),
         disconnect: () => window.api.connector.github.disconnect(),
+        getToken: () => window.api.connector.github.getToken(),
       },
       google: {
         getStatus: () => window.api.connector.google.getStatus(),
@@ -254,6 +255,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
         startDeviceFlow: () => window.api.connector.google.startDeviceFlow(),
         pollDeviceFlow: (sessionId: string) => window.api.connector.google.pollDeviceFlow(sessionId),
         disconnect: () => window.api.connector.google.disconnect(),
+        getToken: () => window.api.connector.google.getToken(),
       },
       microsoft: {
         getStatus: () => window.api.connector.microsoft.getStatus(),
@@ -261,6 +263,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
         startDeviceFlow: () => window.api.connector.microsoft.startDeviceFlow(),
         pollDeviceFlow: (sessionId: string) => window.api.connector.microsoft.pollDeviceFlow(sessionId),
         disconnect: () => window.api.connector.microsoft.disconnect(),
+        getToken: () => window.api.connector.microsoft.getToken(),
       },
     },
 
