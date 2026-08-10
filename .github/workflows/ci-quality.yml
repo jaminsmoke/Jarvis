@@ -1,6 +1,7 @@
 name: ci-quality
 
-# CI de calidad: typecheck, tests del desktop, tests de la app y lint.
+# CI de calidad: typecheck (9 paquetes), tests del desktop, tests de la app,
+# tests de core (4 paquetes), lint y changelog.
 # Corre en cada push a dev, en pull requests y manualmente.
 on:
   push:
@@ -18,9 +19,9 @@ concurrency:
 
 jobs:
   typecheck:
-    name: Typecheck (desktop + app)
+    name: Typecheck (9 paquetes)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
@@ -36,12 +37,40 @@ jobs:
           HUSKY: "0"
         run: bun install --frozen-lockfile
 
-      - name: Typecheck desktop
-        working-directory: packages/desktop
+      - name: Typecheck schema
+        working-directory: packages/schema
+        run: bun run typecheck
+
+      - name: Typecheck protocol
+        working-directory: packages/protocol
+        run: bun run typecheck
+
+      - name: Typecheck core
+        working-directory: packages/core
+        run: bun run typecheck
+
+      - name: Typecheck server
+        working-directory: packages/server
+        run: bun run typecheck
+
+      - name: Typecheck client
+        working-directory: packages/client
+        run: bun run typecheck
+
+      - name: Typecheck sdk-next
+        working-directory: packages/sdk-next
+        run: bun run typecheck
+
+      - name: Typecheck opencode
+        working-directory: packages/opencode
         run: bun run typecheck
 
       - name: Typecheck app
         working-directory: packages/app
+        run: bun run typecheck
+
+      - name: Typecheck desktop
+        working-directory: packages/desktop
         run: bun run typecheck
 
   test-desktop:
@@ -95,6 +124,71 @@ jobs:
         working-directory: packages/app
         run: bun test --conditions=solid --preload ./happydom.ts ./src
 
+  tests-core:
+    name: Tests core (unit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Determine if core tests should run
+        id: should-run
+        shell: bash
+        run: |
+          # Default: no ejecutar (seguro ante fallos de git en PRs desde forks)
+          echo "run=false" >> "$GITHUB_OUTPUT"
+          # Siempre en push a dev o workflow_dispatch
+          if [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # En PR: solo si cambian paquetes core
+          git fetch origin "${{ github.base_ref }}" --depth=1 2>/dev/null || true
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" 2>/dev/null | grep -qE '^packages/(schema|protocol|core|server|client|sdk-next|opencode)/'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Bun
+        if: steps.should-run.outputs.run == 'true'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.0
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        if: steps.should-run.outputs.run == 'true'
+        shell: bash
+        env:
+          HUSKY: "0"
+        run: bun install --frozen-lockfile
+
+      - name: Test core
+        if: steps.should-run.outputs.run == 'true'
+        working-directory: packages/core
+        run: bun test --timeout 30000 --only-failures
+
+      - name: Test client
+        if: steps.should-run.outputs.run == 'true'
+        working-directory: packages/client
+        run: bun test --timeout 5000
+
+      - name: Test sdk-next
+        if: steps.should-run.outputs.run == 'true'
+        working-directory: packages/sdk-next
+        run: bun test --timeout 5000
+
+      - name: Test opencode
+        if: steps.should-run.outputs.run == 'true'
+        working-directory: packages/opencode
+        run: bun test --timeout 30000 --only-failures
+
+      - name: Check generated client (codegen validation)
+        if: steps.should-run.outputs.run == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        working-directory: packages/client
+        run: bun run check:generated
+
   lint:
     name: Lint (oxlint)
     runs-on: ubuntu-latest
@@ -120,7 +214,7 @@ jobs:
   changelog:
     name: Regenerate changelog
     runs-on: ubuntu-latest
-    needs: [typecheck, test-desktop, test-app, lint]
+    needs: [typecheck, test-desktop, test-app, tests-core, lint]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 5
     permissions:
