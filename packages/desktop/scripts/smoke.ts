@@ -121,7 +121,7 @@ async function checkLaunch(exePath: string) {
     fail(`No existe el ejecutable ${exePath}`)
     return
   }
-  const proc = Bun.spawn([exePath, "--disable-gpu"], { stdout: "ignore", stderr: "pipe" })
+  const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], { stdout: "ignore", stderr: "pipe" })
   const stderr: Buffer[] = []
   proc.stderr?.pipeTo(
     new WritableStream({
