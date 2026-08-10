@@ -177,7 +177,7 @@ jobs:
       - name: Test sdk-next
         if: steps.should-run.outputs.run == 'true'
         working-directory: packages/sdk-next
-        run: bun test --timeout 5000
+        run: bun test --timeout 5000 --only-failures
 
       - name: Test opencode
         if: steps.should-run.outputs.run == 'true'
