@@ -8,10 +8,12 @@
 
 ### Workflows activos
 
-Solo 3 workflows están activos en `.github/workflows/`:
+Solo 5 workflows están activos (4 en `.github/workflows/` + 1 gestionado por GitHub):
 - `ci-quality` — typecheck + tests + lint + changelog
 - `release-desktop` — tags `v*`, build y publicación de escritorio
-- `pages-build-deployment` — GitHub Pages desde `docs/` (gestionado por GitHub)
+- `test` — suite nightly (unit + e2e en ubuntu/windows) — `test.yml`
+- `upstream-report` — informe semanal de sync con upstream — `upstream-report.yml`
+- `pages-build-deployment` — GitHub Pages desde `docs/` (gestionado por GitHub, sin `.yml` en el repo)
 
 ### Workflows heredados de OpenCode
 
@@ -30,7 +32,7 @@ Los workflows del fork están en `.github/workflows/upstream-workflows/`. GitHub
 - Nunca usar runners `blacksmith-*` (no accesibles desde Jarvis)
 - Nunca referenciar secrets/vars con prefijo `OPENCODE_`
 - `close-issues.ts` operaba sobre `anomalyco/opencode` — solo reactivar apuntando a `jaminsmoke/Jarvis`
-- `test.yml.disabled` se conserva en raíz como base para el futuro item de CI quality
+- `test.yml` está activo (suite nightly, Issue #39); el antiguo `test.yml.disabled` se eliminó al activarlo
 
 ## Branch Names
 

@@ -224,6 +224,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
 
+      - name: Verificar AGENTS.md vs workflows activos
+        # #53: guard de drift — la sección "Workflows activos" de AGENTS.md
+        # debe coincidir con los *.yml de .github/workflows/ (sin red ni
+        # permisos extra; pages-build-deployment y *.disabled son casos
+        # especiales). Falla el CI si hay drift.
+        run: python scripts/check-ci-docs.py
+
       - name: Regenerate changelog.html + changelog.json
         shell: bash
         env:
