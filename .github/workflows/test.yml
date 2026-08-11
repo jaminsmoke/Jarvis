@@ -41,10 +41,93 @@ jobs:
           HUSKY: "0"
         run: bun install --frozen-lockfile
 
-      - name: Run unit tests (todos los paquetes)
+      # Los tests NO se ejecutan desde la raíz: el guard do-not-run-tests-from-root
+      # de bunfig.toml lo impide a propósito. Un paso por paquete con working-directory,
+      # mismo patrón que ci-quality.yml.
+      - name: Run unit tests (schema)
         timeout-minutes: 25
-        shell: bash
+        working-directory: packages/schema
         run: bun test --timeout 30000
+
+      - name: Run unit tests (protocol)
+        timeout-minutes: 25
+        working-directory: packages/protocol
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (core)
+        timeout-minutes: 25
+        working-directory: packages/core
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (server)
+        timeout-minutes: 25
+        working-directory: packages/server
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (client)
+        timeout-minutes: 25
+        working-directory: packages/client
+        run: bun test --timeout 5000
+
+      - name: Run unit tests (sdk-next)
+        timeout-minutes: 25
+        working-directory: packages/sdk-next
+        run: bun test --timeout 5000 ./test/import-boundaries.test.ts
+
+      - name: Run unit tests (opencode)
+        timeout-minutes: 25
+        working-directory: packages/opencode
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (codemode)
+        timeout-minutes: 25
+        working-directory: packages/codemode
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (llm)
+        timeout-minutes: 25
+        working-directory: packages/llm
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (tui)
+        timeout-minutes: 25
+        working-directory: packages/tui
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (ui)
+        timeout-minutes: 25
+        working-directory: packages/ui
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (session-ui)
+        timeout-minutes: 25
+        working-directory: packages/session-ui
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (effect-drizzle-sqlite)
+        timeout-minutes: 25
+        working-directory: packages/effect-drizzle-sqlite
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (http-recorder)
+        timeout-minutes: 25
+        working-directory: packages/http-recorder
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (httpapi-codegen)
+        timeout-minutes: 25
+        working-directory: packages/httpapi-codegen
+        run: bun test --timeout 30000
+
+      - name: Run unit tests (app)
+        timeout-minutes: 25
+        working-directory: packages/app
+        run: bun test --conditions=solid --preload ./happydom.ts ./src
+
+      - name: Run unit tests (desktop)
+        timeout-minutes: 25
+        working-directory: packages/desktop
+        run: bun test
 
       - name: Check generated client
         if: runner.os == 'Linux'
