@@ -1740,6 +1740,189 @@ const scenarios: Scenario[] = [
     .probe({ path: "/global/upgrade", body: { target: 1 } })
     .at(() => ({ path: "/global/upgrade", body: { target: 1 } }))
     .status(400),
+  // Connectors — the server-side device-flow proxy (web support). The full
+  // device flow (device → poll → token → profile → credential) is covered in
+  // depth by test/server/httpapi-connector.test.ts with a mocked fetch; these
+  // scenarios prove each route decodes and returns the expected shapes.
+  // Microsoft is `disabled` in the registry, so its routes report the disabled
+  // state. Only the github/google `device` routes hit a provider endpoint
+  // (device-code); they stub globalThis.fetch — scenarios run with
+  // concurrency 1, so the stub cannot leak into other scenarios.
+  http.protected
+    .get("/connector/github/status", "connector.github.status")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "github status should report disabled without a credential")
+      check(body.connected === false, "github status should report disconnected without a credential")
+    }),
+  http.protected
+    .post("/connector/github/set-enabled", "connector.github.setEnabled")
+    .global()
+    .at(() => ({ path: "/connector/github/set-enabled", body: { enabled: true } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === true, "github set-enabled should reflect the requested state")
+      check(body.connected === false, "github set-enabled should report disconnected without a credential")
+    }),
+  http.protected
+    .post("/connector/github/device", "connector.github.device")
+    .global()
+    .seeded(() =>
+      Effect.sync(() => {
+        const originalFetch = globalThis.fetch
+        globalThis.fetch = (async (_input: RequestInfo | URL, _init?: RequestInit) =>
+          new Response(
+            JSON.stringify({
+              device_code: "dc_exercise",
+              user_code: "WDJB-MJHT",
+              verification_uri: "https://github.com/login/device",
+              interval: 5,
+              expires_in: 900,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          )) as typeof fetch
+        return { originalFetch }
+      }),
+    )
+    .at(() => ({ path: "/connector/github/device" }))
+    .jsonEffect(200, (body, ctx) =>
+      Effect.gen(function* () {
+        try {
+          object(body)
+          check(typeof body.sessionId === "string" && body.sessionId.length > 0, "device should return a session id")
+          check(body.userCode === "WDJB-MJHT", "device should return the user code")
+          check(body.verificationUri === "https://github.com/login/device", "device should return the verification uri")
+          check(body.interval === 5, "device should return the polling interval")
+          check(body.expiresIn === 900, "device should return the codes expiry")
+        } finally {
+          globalThis.fetch = ctx.state.originalFetch
+        }
+      }),
+    ),
+  http.protected
+    .post("/connector/github/poll", "connector.github.poll")
+    .global()
+    .at(() => ({ path: "/connector/github/poll", body: { sessionId: "con_httpapi_missing" } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.status === "error", "poll should report an error for a missing session")
+      check(typeof body.message === "string", "poll should include an error message")
+    }),
+  http.protected
+    .post("/connector/github/disconnect", "connector.github.disconnect")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "github disconnect should leave the connector disabled")
+      check(body.connected === false, "github disconnect should report disconnected")
+    }),
+  http.protected
+    .get("/connector/google/status", "connector.google.status")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "google status should report disabled without a credential")
+      check(body.connected === false, "google status should report disconnected without a credential")
+    }),
+  http.protected
+    .post("/connector/google/set-enabled", "connector.google.setEnabled")
+    .global()
+    .at(() => ({ path: "/connector/google/set-enabled", body: { enabled: true } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === true, "google set-enabled should reflect the requested state")
+      check(body.connected === false, "google set-enabled should report disconnected without a credential")
+    }),
+  http.protected
+    .post("/connector/google/device", "connector.google.device")
+    .global()
+    .seeded(() =>
+      Effect.sync(() => {
+        const originalFetch = globalThis.fetch
+        globalThis.fetch = (async (_input: RequestInfo | URL, _init?: RequestInit) =>
+          new Response(
+            JSON.stringify({
+              device_code: "dc_exercise_google",
+              user_code: "ABCD-EFGH",
+              verification_uri: "https://oauth2.googleapis.com/device",
+              interval: 5,
+              expires_in: 900,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          )) as typeof fetch
+        return { originalFetch }
+      }),
+    )
+    .at(() => ({ path: "/connector/google/device" }))
+    .jsonEffect(200, (body, ctx) =>
+      Effect.gen(function* () {
+        try {
+          object(body)
+          check(typeof body.sessionId === "string" && body.sessionId.length > 0, "device should return a session id")
+          check(body.userCode === "ABCD-EFGH", "device should return the user code")
+          check(body.verificationUri === "https://oauth2.googleapis.com/device", "device should return the verification uri")
+          check(body.interval === 5, "device should return the polling interval")
+          check(body.expiresIn === 900, "device should return the codes expiry")
+        } finally {
+          globalThis.fetch = ctx.state.originalFetch
+        }
+      }),
+    ),
+  http.protected
+    .post("/connector/google/poll", "connector.google.poll")
+    .global()
+    .at(() => ({ path: "/connector/google/poll", body: { sessionId: "con_httpapi_missing" } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.status === "error", "poll should report an error for a missing session")
+      check(typeof body.message === "string", "poll should include an error message")
+    }),
+  http.protected
+    .post("/connector/google/disconnect", "connector.google.disconnect")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "google disconnect should leave the connector disabled")
+      check(body.connected === false, "google disconnect should report disconnected")
+    }),
+  http.protected
+    .get("/connector/microsoft/status", "connector.microsoft.status")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "microsoft status should report disabled")
+      check(body.connected === false, "microsoft status should report disconnected")
+    }),
+  http.protected
+    .post("/connector/microsoft/set-enabled", "connector.microsoft.setEnabled")
+    .global()
+    .at(() => ({ path: "/connector/microsoft/set-enabled", body: { enabled: true } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "microsoft set-enabled should stay disabled")
+      check(body.connected === false, "microsoft set-enabled should report disconnected")
+    }),
+  http.protected
+    .post("/connector/microsoft/device", "connector.microsoft.device")
+    .global()
+    .status(400),
+  http.protected
+    .post("/connector/microsoft/poll", "connector.microsoft.poll")
+    .global()
+    .at(() => ({ path: "/connector/microsoft/poll", body: { sessionId: "con_httpapi_missing" } }))
+    .json(200, (body) => {
+      object(body)
+      check(body.status === "error", "microsoft poll should report the disabled connector")
+    }),
+  http.protected
+    .post("/connector/microsoft/disconnect", "connector.microsoft.disconnect")
+    .global()
+    .json(200, (body) => {
+      object(body)
+      check(body.enabled === false, "microsoft disconnect should leave the connector disabled")
+      check(body.connected === false, "microsoft disconnect should report disconnected")
+    }),
 ]
 
 const llmScenarios = new Set([
