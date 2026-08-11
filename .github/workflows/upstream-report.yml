@@ -35,20 +35,20 @@ jobs:
           python scripts/upstream-report.py > /tmp/upstream-report.md
           echo "Informe generado ($(wc -l < /tmp/upstream-report.md) líneas)"
 
-      - name: Garantizar label upstream
-        # #51: el label es canónico pero podía no existir (fallo puntual
-        # 2026-08-10). Crearlo si falta — idempotente, sin pisar color/descripción.
+      - name: Garantizar label upstream (best-effort)
+        # #51: GITHUB_TOKEN no puede gestionar labels (403 en /labels — el
+        # permiso metadata es read-only e inmodificable), así que el label no
+        # se puede garantizar desde este workflow con ese token. Se intenta
+        # crearlo por si el token lo permite (p. ej. un PAT); si no, el
+        # informe se publica igualmente SIN depender del label (el issue se
+        # encuentra por título).
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh label list --search "upstream" --json name --jq '.[].name' | grep -qx "upstream"; then
-            echo "Label upstream ya existe"
-          else
-            echo "Label upstream NO existe — creándolo"
-            gh label create upstream --color B60205 \
-              --description "Sincronización con upstream (informes semanales)" || \
-              echo "AVISO: no se pudo crear el label upstream"
-          fi
+          gh label create upstream --force --color B60205 \
+            --description "Sincronización con upstream (informes semanales)" 2>/dev/null \
+            && echo "Label upstream garantizado" \
+            || echo "AVISO: GITHUB_TOKEN no puede gestionar labels — continúo sin él"
 
       - name: Publicar informe (crear o comentar issue)
         env:
@@ -58,7 +58,7 @@ jobs:
           ISSUE=$(gh issue list --search "in:title \"Informe upstream (semanal)\"" --state open \
             --json number --jq '.[0].number' 2>/dev/null || true)
           if [ -z "$ISSUE" ]; then
-            gh issue create --title "$TITLE" --body-file /tmp/upstream-report.md --label upstream
+            gh issue create --title "$TITLE" --body-file /tmp/upstream-report.md
             echo "Issue de informe creado"
           else
             gh issue comment "$ISSUE" --body-file /tmp/upstream-report.md
