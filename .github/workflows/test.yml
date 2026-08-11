@@ -71,10 +71,12 @@ jobs:
         working-directory: packages/sdk-next
         run: bun test --timeout 5000 ./test/import-boundaries.test.ts
 
+      # opencode necesita más margen por test: el bootstrap de instancias con
+      # git+plugins tarda >60s en runners Windows fríos (ver InstanceStore.provide).
       - name: Run unit tests (opencode)
         timeout-minutes: 25
         working-directory: packages/opencode
-        run: bun test --timeout 30000
+        run: bun test --timeout 90000
 
       - name: Run unit tests (codemode)
         timeout-minutes: 25

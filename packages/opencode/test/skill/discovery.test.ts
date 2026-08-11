@@ -63,7 +63,7 @@ afterAll(async () => {
   await rm(cacheDir, { recursive: true, force: true })
 })
 
-describe("Discovery.pull", () => {
+describe("Discovery.pull", { concurrency: 1 }, () => {
   it.live("downloads skills from cloudflare url", () =>
     Effect.gen(function* () {
       const fsys = yield* FSUtil.Service
