@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
   issues: write
+  metadata: read # gh label list (GET /labels)
 
 concurrency:
   group: upstream-report
