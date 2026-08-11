@@ -21,6 +21,56 @@ export type ConnectorUser = {
   name?: string
 }
 
+/**
+ * A capability represents a discrete unit of functionality that a connector can provide.
+ * Each capability has associated OAuth scopes, risk level, and tools.
+ */
+export type Capability = {
+  /** Stable id, e.g. "read_repos", "write_issues", "read_drive". */
+  id: string
+  /** Display name (i18n key or plain string). */
+  name: string
+  /** Scope aliases: maps each connector to the OAuth scopes that satisfy this capability. */
+  scopeAliases: Partial<Record<ConnectorId, string[]>>
+  /** Risk level: read = safe to auto-enable, write = requires explicit confirmation. */
+  risk: "read" | "write"
+  /** Tools provided by this capability (tool names from the registry). */
+  tools: string[]
+  /** Whether this capability is enabled by default when discovered. Read = true, write = false. */
+  defaultEnabled: boolean
+  /** Whether changing this capability requires reconnection (new token). */
+  requiresReconnect: boolean
+}
+
+/**
+ * Runtime state of a single capability for a connected user.
+ * Calculated as: active = supported && granted && enabled.
+ */
+export type CapabilityGrant = {
+  /** The capability ID this grant refers to. */
+  capabilityId: string
+  /** Whether this version of Jarvis knows how to execute this capability. */
+  supported: boolean
+  /** Whether the provider confirms the user has the required scopes. */
+  granted: boolean
+  /** Whether the user has chosen to enable this capability. */
+  enabled: boolean
+  /** Computed: supported && granted && enabled. */
+  active: boolean
+}
+
+/**
+ * Full capability state for a connector, discovered at runtime.
+ */
+export type ConnectorCapabilityState = {
+  /** Grants for each known capability. */
+  grants: CapabilityGrant[]
+  /** Scopes the provider returned that don't map to any known capability. */
+  unknownScopes: string[]
+  /** ISO timestamp of when this state was discovered. */
+  discoveredAt: string
+}
+
 /** Current state of a connector. */
 export type ConnectorStatus = {
   /** Whether the connector is enabled (Switch ON). */
@@ -238,4 +288,141 @@ export const CONNECTOR_LIST: ConnectorDefinition[] = [github, google, microsoft]
 
 export function getConnector(id: string): ConnectorDefinition | undefined {
   return CONNECTORS[id as ConnectorId]
+}
+
+/**
+ * Initial capability definitions.
+ * These are the capabilities that Jarvis knows how to execute.
+ * Each capability maps to specific OAuth scopes per provider.
+ */
+export const CAPABILITIES: Capability[] = [
+  // ─── GitHub ───────────────────────────────────────────────────────────
+  {
+    id: "github:read_repos",
+    name: "Read repositories",
+    scopeAliases: {
+      github: ["public_repo", "repo", "repo:status", "repo_deployment"],
+    },
+    risk: "read",
+    tools: ["github_list_repos"],
+    defaultEnabled: true,
+    requiresReconnect: false,
+  },
+  {
+    id: "github:read_issues",
+    name: "Read issues and pull requests",
+    scopeAliases: {
+      github: ["public_repo", "repo", "repo:status"],
+    },
+    risk: "read",
+    tools: ["github_read_issue"],
+    defaultEnabled: true,
+    requiresReconnect: false,
+  },
+  {
+    id: "github:search_code",
+    name: "Search code",
+    scopeAliases: {
+      github: ["public_repo", "repo"],
+    },
+    risk: "read",
+    tools: ["github_search_code"],
+    defaultEnabled: true,
+    requiresReconnect: false,
+  },
+  {
+    id: "github:write_issues",
+    name: "Create and update issues",
+    scopeAliases: {
+      github: ["repo"],
+    },
+    risk: "write",
+    tools: [], // TODO: add write tools in v0.2+
+    defaultEnabled: false,
+    requiresReconnect: false,
+  },
+  {
+    id: "github:write_prs",
+    name: "Create and update pull requests",
+    scopeAliases: {
+      github: ["repo"],
+    },
+    risk: "write",
+    tools: [], // TODO: add write tools in v0.2+
+    defaultEnabled: false,
+    requiresReconnect: false,
+  },
+
+  // ─── Google ───────────────────────────────────────────────────────────
+  {
+    id: "google:read_profile",
+    name: "Read user profile",
+    scopeAliases: {
+      google: ["openid", "email", "profile"],
+    },
+    risk: "read",
+    tools: [], // Profile is used for user display, not as a tool
+    defaultEnabled: true,
+    requiresReconnect: false,
+  },
+  {
+    id: "google:read_drive",
+    name: "Read Google Drive files",
+    scopeAliases: {
+      google: ["https://www.googleapis.com/auth/drive.readonly"],
+    },
+    risk: "read",
+    tools: [], // TODO: add Drive tools in v0.3.0
+    defaultEnabled: false,
+    requiresReconnect: true,
+  },
+  {
+    id: "google:read_docs",
+    name: "Read Google Docs",
+    scopeAliases: {
+      google: ["https://www.googleapis.com/auth/documents.readonly"],
+    },
+    risk: "read",
+    tools: [], // TODO: add Docs tools in v0.3.0
+    defaultEnabled: false,
+    requiresReconnect: true,
+  },
+
+  // ─── Microsoft (future) ──────────────────────────────────────────────
+  {
+    id: "microsoft:read_profile",
+    name: "Read user profile",
+    scopeAliases: {
+      microsoft: ["https://graph.microsoft.com/User.Read"],
+    },
+    risk: "read",
+    tools: [],
+    defaultEnabled: true,
+    requiresReconnect: false,
+  },
+  {
+    id: "microsoft:read_onedrive",
+    name: "Read OneDrive files",
+    scopeAliases: {
+      microsoft: ["https://graph.microsoft.com/Files.Read.All"],
+    },
+    risk: "read",
+    tools: [], // TODO: add OneDrive tools
+    defaultEnabled: false,
+    requiresReconnect: false,
+  },
+]
+
+/**
+ * Get all capabilities for a specific connector.
+ */
+export function getCapabilitiesForConnector(connectorId: ConnectorId): Capability[] {
+  return CAPABILITIES.filter(cap => connectorId in cap.scopeAliases)
+}
+
+/**
+ * Find the capability that provides a specific tool.
+ */
+export function getCapabilityForTool(toolName: string): Capability | undefined {
+  return CAPABILITIES.find(cap => cap.tools.includes(toolName))
 }
