@@ -144,16 +144,31 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     try:
+        # --cherry-pick --left-only: excluye commits cuyo patch-id ya fue
+        # incorporado (cherry-pick con SHA diferente, e.g. PR #42).
         count_out = subprocess.run(
-            ["git", "rev-list", "--left-right", "--count", "upstream/dev...HEAD"],
+            ["git", "rev-list", "--count", "--cherry-pick", "--left-only",
+             "upstream/dev...HEAD"],
             capture_output=True,
             text=True,
             check=True,
         ).stdout
-        behind, ahead = parse_rev_list_count(count_out)
+        behind = int(count_out.strip())
+        # ahead se calcula por separado (no necesita filtro cherry-pick)
+        ahead_out = subprocess.run(
+            ["git", "rev-list", "--count", "--right-only",
+             "upstream/dev...HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        ahead = int(ahead_out.strip())
 
+        # --cherry-pick --left-only: solo commits no incorporados
+        # (equivalencia de patch-id excluye cherry-picks de la PR #42).
         log_out = subprocess.run(
-            ["git", "log", "--oneline", "upstream/dev", "^HEAD"],
+            ["git", "log", "--oneline", "--cherry-pick", "--left-only",
+             "--no-merges", "upstream/dev...HEAD"],
             capture_output=True,
             text=True,
             check=True,
