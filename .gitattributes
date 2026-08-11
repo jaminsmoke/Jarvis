@@ -1,2 +1,5 @@
 packages/core/migration/**/snapshot.json linguist-generated
 packages/core/src/database/migration.gen.ts linguist-generated
+# Los fixtures generados se comparan byte a byte con la salida de compile() (LF):
+# forzar LF en checkout también en Windows para que el test de currentness pase.
+packages/httpapi-codegen/test/generated/** text eol=lf

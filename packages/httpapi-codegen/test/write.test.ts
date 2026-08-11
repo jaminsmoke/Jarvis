@@ -1,7 +1,10 @@
 import { describe, expect } from "bun:test"
 import { Effect, FileSystem, Option } from "effect"
+import path from "node:path"
 import { write, type Output } from "../src"
 import { it } from "./effect"
+
+const generated = path.join("/generated")
 
 describe("HttpApiCodegen.write", () => {
   it.effect("writes compiled files beneath the output directory", () => {
@@ -15,8 +18,8 @@ describe("HttpApiCodegen.write", () => {
       yield* write(output, "/generated")
 
       expect(writes).toEqual([
-        { path: "/generated/session.ts", content: "export const session = {}\n" },
-        { path: "/generated/.httpapi-codegen.json", content: '[\n  "session.ts"\n]\n' },
+        { path: path.join(generated, "session.ts"), content: "export const session = {}\n" },
+        { path: path.join(generated, ".httpapi-codegen.json"), content: '[\n  "session.ts"\n]\n' },
       ])
     }).pipe(
       Effect.provideService(
@@ -55,7 +58,7 @@ describe("HttpApiCodegen.write", () => {
           writeFileString: () => Effect.void,
         }),
       ),
-      Effect.tap(() => Effect.sync(() => expect(removed).toEqual(["/generated/old.ts"]))),
+      Effect.tap(() => Effect.sync(() => expect(removed).toEqual([path.join(generated, "old.ts")]))),
     )
   })
 
