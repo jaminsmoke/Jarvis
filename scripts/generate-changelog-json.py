@@ -100,7 +100,7 @@ def main():
 
         by_version.setdefault(ver, []).append({"title": title, "description": desc})
 
-    version_order = ["v0.1.5", "v0.1.4", "v0.1.3", "v0.1.2", "v0.1.1", "v0.1.0"]
+    version_order = ["v0.1.51", "v0.1.5", "v0.1.4", "v0.1.3", "v0.1.2", "v0.1.1", "v0.1.0"]
     sorted_versions = [v for v in version_order if v in by_version]
     # Include any versions not in the predefined order
     for v in sorted(by_version.keys()):

@@ -44,8 +44,8 @@ STATUS = {
 }
 
 VERSION = {
-    "v0.1.0": "075d6fb1", "v0.1.1": "ace4e772", "v0.1.2": "b7128c7b",
-    "v0.1.3": "4deda89b", "v0.1.4": "674f4064", "v0.1.5": "ec9916a0", "Sin asignar": "b38b3c4e",
+    "v0.1.0": "4221b2d4", "v0.1.1": "3fb9da4e", "v0.1.2": "5603224c",
+    "v0.1.3": "a1f40f7f", "v0.1.4": "a83d1469", "v0.1.5": "62cbd68e", "v0.1.51": "774958df", "Sin asignar": "94035cfa",
 }
 
 PRIORITY = {"Alta": "6921d900", "Media": "f5651c12", "Baja": "2eee9b96"}
@@ -272,7 +272,7 @@ def date_from_exact(value):
 
 ACTIVE_STATUSES = {"Detectado", "Debate", "Roadmap", "Ejecutando", "Verificando"}
 
-KNOWN_VERSIONS = {"v0.1.0", "v0.1.1", "v0.1.2", "v0.1.3", "v0.1.4", "v0.1.5", "v0.2.0", "Sin asignar"}
+KNOWN_VERSIONS = {"v0.1.0", "v0.1.1", "v0.1.2", "v0.1.3", "v0.1.4", "v0.1.5", "v0.1.51", "Sin asignar"}
 
 
 def latest_release_tag():
@@ -548,7 +548,7 @@ def cmd_changelog():
         v = item['version']
         by_version.setdefault(v, []).append(item)
 
-    version_order = ['v0.1.5', 'v0.1.4', 'v0.1.3', 'v0.1.2', 'v0.1.1', 'v0.1.0', 'Sin asignar']
+    version_order = ['v0.1.51', 'v0.1.5', 'v0.1.4', 'v0.1.3', 'v0.1.2', 'v0.1.1', 'v0.1.0', 'Sin asignar']
     sorted_versions = [v for v in version_order if v in by_version]
     total = sum(len(vv) for vv in by_version.values())
 

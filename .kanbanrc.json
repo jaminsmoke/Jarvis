@@ -1,77 +1,77 @@
 {
- "projectId": "PVT_kwHOBM87Yc4Bfu74",
- "repoId": "R_kgDOTx4wIw",
- "repo": "jaminsmoke/Jarvis",
- "fields": {
-  "Status": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_v1g",
-  "Created": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2A",
-  "Updated": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2E",
-  "Closed": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2I",
-  "Completado": "PVTF_lAHOBM87Yc4Bfu74zhZ_wbo",
-  "HighLighted": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbs",
-  "Tipo": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbw",
-  "Decision": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb0",
-  "Prioridad": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb4",
-  "Versión": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_weA",
-  "Área principal": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wwc",
-  "Inicio": "PVTF_lAHOBM87Yc4Bfu74zhZ_wwg",
-  "Inicio exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wxY",
-  "Completado exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wyQ"
- },
- "options": {
-  "status": {
-   "Detectado": "ef2fdff4",
-   "Debate": "ddac116a",
-   "Roadmap": "0ca99905",
-   "Ejecutando": "79f82a08",
-   "Verificando": "741a25fa",
-   "Changelog": "f9a1286b"
+  "projectId": "PVT_kwHOBM87Yc4Bfu74",
+  "repoId": "R_kgDOTx4wIw",
+  "repo": "jaminsmoke/Jarvis",
+  "fields": {
+    "Status": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_v1g",
+    "Created": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2A",
+    "Updated": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2E",
+    "Closed": "PVTF_lAHOBM87Yc4Bfu74zhZ_v2I",
+    "Completado": "PVTF_lAHOBM87Yc4Bfu74zhZ_wbo",
+    "HighLighted": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbs",
+    "Tipo": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wbw",
+    "Decision": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb0",
+    "Prioridad": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wb4",
+    "Versión": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_weA",
+    "Área principal": "PVTSSF_lAHOBM87Yc4Bfu74zhZ_wwc",
+    "Inicio": "PVTF_lAHOBM87Yc4Bfu74zhZ_wwg",
+    "Inicio exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wxY",
+    "Completado exacto": "PVTF_lAHOBM87Yc4Bfu74zhZ_wyQ"
   },
-  "version": {
-   "Sin asignar": "b38b3c4e",
-   "v0.1.0": "075d6fb1",
-   "v0.1.1": "ace4e772",
-   "v0.1.2": "b7128c7b",
-   "v0.1.3": "4deda89b",
-   "v0.1.4": "674f4064",
-   "v0.1.5": "ec9916a0",
-   "v0.2.0": "ee1ec55a"
-  },
-  "priority": {
-   "Alta": "6921d900",
-   "Media": "f5651c12",
-   "Baja": "2eee9b96"
-  },
-  "decision": {
-   "Pendiente": "836be57a",
-   "Aprobado": "f73848fa",
-   "Diferido": "d4010352",
-   "Cancelado": "57635fa9"
-  },
-  "tipo": {
-   "Bug": "274ee788",
-   "Feature": "80bb9b0c",
-   "Maintenance": "f15d15e8",
-   "Security": "22af383b",
-   "Decision": "fcdd6924"
-  },
-  "area": {
-   "App": "cef0dd05",
-   "Desktop": "cdf56c71",
-   "Core": "5b3f603e",
-   "Server": "394a3c9b",
-   "CI": "403239d7",
-   "Infra": "8d9d4236",
-   "Docs": "44c2fa77",
-   "Lint": "1603e9a1",
-   "Dependencies": "91bee31d",
-   "Release": "0e4281a5",
-   "Governance": "41e91e98",
-   "Upstream": "5977d3e8"
-  },
-  "highlighted": {
-   "Yes": "573cc802",
-   "No": "6d05e0b6"
+  "options": {
+    "status": {
+      "Detectado": "ef2fdff4",
+      "Debate": "ddac116a",
+      "Roadmap": "0ca99905",
+      "Ejecutando": "79f82a08",
+      "Verificando": "741a25fa",
+      "Changelog": "f9a1286b"
+    },
+    "version": {
+      "Sin asignar": "94035cfa",
+      "v0.1.0": "4221b2d4",
+      "v0.1.1": "3fb9da4e",
+      "v0.1.2": "5603224c",
+      "v0.1.3": "a1f40f7f",
+      "v0.1.4": "a83d1469",
+      "v0.1.5": "62cbd68e",
+      "v0.1.51": "774958df"
+    },
+    "priority": {
+      "Alta": "6921d900",
+      "Media": "f5651c12",
+      "Baja": "2eee9b96"
+    },
+    "decision": {
+      "Pendiente": "836be57a",
+      "Aprobado": "f73848fa",
+      "Diferido": "d4010352",
+      "Cancelado": "57635fa9"
+    },
+    "tipo": {
+      "Bug": "274ee788",
+      "Feature": "80bb9b0c",
+      "Maintenance": "f15d15e8",
+      "Security": "22af383b",
+      "Decision": "fcdd6924"
+    },
+    "area": {
+      "App": "cef0dd05",
+      "Desktop": "cdf56c71",
+      "Core": "5b3f603e",
+      "Server": "394a3c9b",
+      "CI": "403239d7",
+      "Infra": "8d9d4236",
+      "Docs": "44c2fa77",
+      "Lint": "1603e9a1",
+      "Dependencies": "91bee31d",
+      "Release": "0e4281a5",
+      "Governance": "41e91e98",
+      "Upstream": "5977d3e8"
+    },
+    "highlighted": {
+      "Yes": "573cc802",
+      "No": "6d05e0b6"
+    }
   }
- }
 }
