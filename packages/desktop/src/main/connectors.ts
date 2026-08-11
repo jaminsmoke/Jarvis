@@ -303,18 +303,6 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
     return status()
   }
 
-  async function getToken(): Promise<string | null> {
-    if (googleSecretMissing || disabled) return null
-    const credential = getStoredCredential()
-    if (!credential) return null
-    if (isExpired(credential)) {
-      const refreshed = await refreshAccess(credential)
-      if (!refreshed || isExpired(refreshed)) return null
-      return refreshed.access
-    }
-    return credential.access
-  }
-
   function startupHook() {
     void app.whenReady().then(() => {
       // Touch the store eagerly so decrypt failures surface early (and clear).
@@ -325,7 +313,7 @@ function createConnector(def: ConnectorDefinition): ConnectorPlatform & {
     })
   }
 
-  return { getStatus: status, setEnabled, startDeviceFlow, pollDeviceFlow, disconnect, getToken, startupHook }
+  return { getStatus: status, setEnabled, startDeviceFlow, pollDeviceFlow, disconnect, startupHook }
 }
 
 // ── Instances (one per registered connector) ──
@@ -345,7 +333,6 @@ export const CONNECTOR_APIS: Record<
     startDeviceFlow: () => Promise<DeviceFlowStart>
     pollDeviceFlow: (sessionId: string) => Promise<DeviceFlowPoll>
     disconnect: () => Promise<ConnectorStatus>
-    getToken: () => Promise<string | null>
     startupHook: () => void
   }
 > = {

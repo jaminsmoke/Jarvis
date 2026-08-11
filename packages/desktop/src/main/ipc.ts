@@ -157,7 +157,6 @@ export function registerIpcHandlers(deps: Deps) {
       api.pollDeviceFlow(sessionId),
     )
     ipcMain.handle(`connector-${id}-disconnect`, () => api.disconnect())
-    ipcMain.handle(`connector-${id}-token`, () => api.getToken())
   }
 
   ipcMain.handle("draft-blob-put", (_event, data: ArrayBuffer) => drafts.putBlob(new Uint8Array(data)))

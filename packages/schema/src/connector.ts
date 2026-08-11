@@ -65,8 +65,6 @@ export type ConnectorPlatform = {
   pollDeviceFlow(sessionId: string): Promise<DeviceFlowPoll>
   /** Revoke the stored token and disconnect. */
   disconnect(): Promise<ConnectorStatus>
-  /** Decrypt and return the raw access token, or null if not connected. */
-  getToken(): Promise<string | null>
 }
 
 export type ConnectorId = "github" | "google" | "microsoft"

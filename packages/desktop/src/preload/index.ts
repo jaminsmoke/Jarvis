@@ -73,7 +73,6 @@ const api: ElectronAPI = {
       startDeviceFlow: () => ipcRenderer.invoke("connector-github-device-start"),
       pollDeviceFlow: (sessionId) => ipcRenderer.invoke("connector-github-device-poll", sessionId),
       disconnect: () => ipcRenderer.invoke("connector-github-disconnect"),
-      getToken: () => ipcRenderer.invoke("connector-github-token"),
     },
     google: {
       getStatus: () => ipcRenderer.invoke("connector-google-status"),
@@ -81,7 +80,6 @@ const api: ElectronAPI = {
       startDeviceFlow: () => ipcRenderer.invoke("connector-google-device-start"),
       pollDeviceFlow: (sessionId) => ipcRenderer.invoke("connector-google-device-poll", sessionId),
       disconnect: () => ipcRenderer.invoke("connector-google-disconnect"),
-      getToken: () => ipcRenderer.invoke("connector-google-token"),
     },
     microsoft: {
       getStatus: () => ipcRenderer.invoke("connector-microsoft-status"),
@@ -89,7 +87,6 @@ const api: ElectronAPI = {
       startDeviceFlow: () => ipcRenderer.invoke("connector-microsoft-device-start"),
       pollDeviceFlow: (sessionId) => ipcRenderer.invoke("connector-microsoft-device-poll", sessionId),
       disconnect: () => ipcRenderer.invoke("connector-microsoft-disconnect"),
-      getToken: () => ipcRenderer.invoke("connector-microsoft-token"),
     },
   },
   storeGet: (name, key) => ipcRenderer.invoke("store-get", name, key),

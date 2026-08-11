@@ -126,7 +126,6 @@ export type ElectronAPI = {
       startDeviceFlow: () => Promise<DeviceFlowStart>
       pollDeviceFlow: (sessionId: string) => Promise<DeviceFlowPoll>
       disconnect: () => Promise<GitHubConnectorStatus>
-      getToken: () => Promise<string | null>
     }
     google: ConnectorPlatform
     microsoft: ConnectorPlatform

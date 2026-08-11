@@ -80,7 +80,6 @@ function createMockApi(overrides: Partial<GitHubConnectorPlatform> = {}): GitHub
       user: { login: "jaminsmoke", avatar: "https://avatars.example/a.png" },
     })),
     disconnect: mock(async (): Promise<GitHubConnectorStatus> => ({ enabled: true, connected: false })),
-    getToken: mock(async () => null),
     ...overrides,
   }
 }
@@ -283,7 +282,6 @@ describe("useConnector (config-driven, google & microsoft)", () => {
         user: { login: "user@example.com", avatar: "https://example.com/p.png" },
       })),
       disconnect: mock(async () => ({ enabled: false, connected: false })),
-      getToken: mock(async () => null),
     }
     const mapi: ConnectorPlatform = {
       getStatus: mock(async () => ({ enabled: false, connected: false })),
@@ -300,7 +298,6 @@ describe("useConnector (config-driven, google & microsoft)", () => {
         user: { login: "user@contoso.com", avatar: "" },
       })),
       disconnect: mock(async () => ({ enabled: false, connected: false })),
-      getToken: mock(async () => null),
     }
     platform.value = { platform: "desktop", connector: { google: gapi, microsoft: mapi } }
 

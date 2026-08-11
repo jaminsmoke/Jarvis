@@ -45,6 +45,5 @@ export function createWebConnector(def: ConnectorDefinition, input: {
     startDeviceFlow: () => request(`${prefix}/device`, json()),
     pollDeviceFlow: (sessionId) => request(`${prefix}/poll`, json({ body: JSON.stringify({ sessionId }) })),
     disconnect: () => request(`${prefix}/disconnect`, json()),
-    getToken: () => request(`${prefix}/token`, json()),
   }
 }
