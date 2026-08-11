@@ -17,8 +17,9 @@
  *   3. Versión: dist/latest.yml reporta la versión esperada del tag.
  *   4. Arranque + alive: la app empaquetada (dist/win-unpacked) arranca y el
  *      proceso sigue vivo.
- *   5. Health del server local: GET http://localhost:4096/global/health
- *      responde healthy (el server escucha 4096 primero, luego puerto libre).
+ *   5. Health del server local: GET <puerto>/global/health responde healthy.
+ *      El puerto se reserva en el smoke y se fuerza con JARVIS_PORT (la app
+ *      elige puerto libre aleatorio salvo que se lo indiques por env).
  *
  * Nota: `--exe` recibe dist/jarvis-desktop-win-x64.exe, que es el INSTALADOR
  * NSIS (win.target: ["nsis"]). El instalador instala y sale con exit 0 sin
@@ -29,11 +30,11 @@
  * conserva el artefacto en disco para diagnóstico.
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs"
+import { createServer } from "node:net"
 import { join } from "node:path"
 
 // 127.0.0.1 en vez de localhost: en Windows/Node, localhost puede resolver a ::1
 // primero y el fetch fallaría aunque el server (en 127.0.0.1) esté sano.
-const HEALTH_URL = "http://127.0.0.1:4096/global/health"
 const HEALTH_TIMEOUT_MS = 60_000
 const HEALTH_POLL_INTERVAL_MS = 2_000
 
@@ -141,13 +142,46 @@ function resolveAppExe(opts: Options): string {
   return named ?? opts.exe
 }
 
+/**
+ * Reserva un puerto libre en 127.0.0.1.
+ *
+ * La app elige puerto libre aleatorio salvo que exista JARVIS_PORT, así que
+ * el smoke reserva uno y lo fuerza por env: el health check sabe a qué
+ * puerto llamar sin depender de puertos "mágicos" ni colisiones.
+ */
+async function findFreePort(): Promise<number> {
+  const server = createServer()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject)
+      server.listen(0, "127.0.0.1", () => resolve())
+    })
+    const address = server.address()
+    if (typeof address === "object" && address) return address.port
+    throw new Error("No se pudo determinar un puerto libre")
+  } finally {
+    server.close()
+  }
+}
+
 /** Pruebas 4 y 5: arranque del exe, proceso vivo y health del server local. */
 async function checkLaunch(exePath: string) {
   if (!existsSync(exePath)) {
     fail(`No existe el ejecutable ${exePath}`)
     return
   }
-  const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], { stdout: "pipe", stderr: "pipe" })
+  const port = await findFreePort()
+  const healthUrl = `http://127.0.0.1:${port}/global/health`
+  const env: Record<string, string> = {}
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) env[key] = value
+  }
+  env.JARVIS_PORT = String(port)
+  const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], {
+    stdout: "pipe",
+    stderr: "pipe",
+    env,
+  })
   const stdout: Buffer[] = []
   const stderr: Buffer[] = []
   proc.stdout?.pipeTo(
@@ -170,7 +204,7 @@ async function checkLaunch(exePath: string) {
   while (Date.now() < deadline) {
     if (proc.exitCode !== null) break
     try {
-      const res = await fetch(HEALTH_URL)
+      const res = await fetch(healthUrl)
       if (res.ok) {
         const body = (await res.json()) as { healthy?: boolean }
         if (body.healthy === true) {
@@ -192,11 +226,11 @@ async function checkLaunch(exePath: string) {
     const stderrTail = Buffer.concat(stderr).toString("utf8").slice(-800)
     const stdoutTail = Buffer.concat(stdout).toString("utf8").slice(-800)
     const reason = alive
-      ? "proceso vivo pero el server local no responde en " + HEALTH_URL
+      ? "proceso vivo pero el server local no responde en " + healthUrl
       : `proceso terminó con exit code ${proc.exitCode}`
     fail(`Smoke de arranque falló: ${reason}.\n  stdout tail: ${stdoutTail || "(vacío)"}\n  stderr tail: ${stderrTail || "(vacío)"}`)
   } else {
-    pass(`Server local healthy en ${HEALTH_URL}`)
+    pass(`Server local healthy en ${healthUrl}`)
     if (alive) pass("Proceso vivo tras arranque (sin crash)")
     else fail(`El proceso terminó después de responder healthy (exit ${proc.exitCode})`)
   }
