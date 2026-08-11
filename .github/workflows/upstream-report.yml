@@ -35,6 +35,19 @@ jobs:
           python scripts/upstream-report.py > /tmp/upstream-report.md
           echo "Informe generado ($(wc -l < /tmp/upstream-report.md) líneas)"
 
+      - name: Garantizar label upstream
+        # #51: el label es canónico pero podía no existir (fallo puntual
+        # 2026-08-10). Crearlo si falta — idempotente, sin pisar color/descripción.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh label list --search "upstream" --json name --jq '.[].name' | grep -qx "upstream"; then
+            gh label create upstream --color B60205 --description "Sincronización con upstream (informes semanales)"
+            echo "Label upstream creado"
+          else
+            echo "Label upstream ya existe"
+          fi
+
       - name: Publicar informe (crear o comentar issue)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
