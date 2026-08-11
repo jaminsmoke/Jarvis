@@ -11,7 +11,6 @@ on:
 permissions:
   contents: read
   issues: write
-  metadata: read # gh label list (GET /labels)
 
 concurrency:
   group: upstream-report
@@ -42,11 +41,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! gh label list --search "upstream" --json name --jq '.[].name' | grep -qx "upstream"; then
-            gh label create upstream --color B60205 --description "Sincronización con upstream (informes semanales)"
-            echo "Label upstream creado"
-          else
+          if gh label list --search "upstream" --json name --jq '.[].name' | grep -qx "upstream"; then
             echo "Label upstream ya existe"
+          else
+            echo "Label upstream NO existe — creándolo"
+            gh label create upstream --color B60205 \
+              --description "Sincronización con upstream (informes semanales)" || \
+              echo "AVISO: no se pudo crear el label upstream"
           fi
 
       - name: Publicar informe (crear o comentar issue)
