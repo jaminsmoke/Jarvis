@@ -29,8 +29,9 @@
  * Exit code 0 = gate superado. Cualquier fallo imprime un mensaje claro y
  * conserva el artefacto en disco para diagnóstico.
  */
-import { existsSync, readFileSync, readdirSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { createServer } from "node:net"
+import { homedir } from "node:os"
 import { join } from "node:path"
 
 // 127.0.0.1 en vez de localhost: en Windows/Node, localhost puede resolver a ::1
@@ -143,6 +144,48 @@ function resolveAppExe(opts: Options): string {
 }
 
 /**
+ * Vuelca la cola del main.log de la app (electron-log escribe en
+ * %APPDATA%/<app>/logs/<run>/main.log). Busca el más reciente de los
+ * últimos 10 minutos para diagnosticar el arranque del sidecar.
+ */
+function dumpAppLogs() {
+  try {
+    const appData = join(homedir(), "AppData", "Roaming")
+    const found = new Map<string, number>()
+    const walk = (dir: string, depth: number) => {
+      if (depth > 4) return
+      let entries: import("node:fs").Dirent[]
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        return
+      }
+      for (const entry of entries) {
+        const full = join(dir, entry.name)
+        if (entry.isDirectory()) walk(full, depth + 1)
+        else if (entry.name === "main.log") {
+          try {
+            const info = statSync(full)
+            if (Date.now() - info.mtimeMs < 10 * 60 * 1000) found.set(full, info.mtimeMs)
+          } catch {}
+        }
+      }
+    }
+    walk(appData, 0)
+    if (found.size === 0) {
+      console.error("  (no se encontró main.log reciente en %APPDATA%)")
+      return
+    }
+    const newest = [...found.entries()].sort((a, b) => b[1] - a[1])[0][0]
+    const lines = readFileSync(newest, "utf8").split("\n")
+    console.error(`\n  --- Tail de ${newest} ---`)
+    console.error(lines.slice(-60).join("\n"))
+  } catch (error) {
+    console.error("  (error leyendo main.log:", error, ")")
+  }
+}
+
+/**
  * Reserva un puerto libre en 127.0.0.1.
  *
  * La app elige puerto libre aleatorio salvo que exista JARVIS_PORT, así que
@@ -172,11 +215,17 @@ async function checkLaunch(exePath: string) {
   }
   const port = await findFreePort()
   const healthUrl = `http://127.0.0.1:${port}/global/health`
+  // La app exige Basic auth cuando hay password (siempre la hay: el sidecar
+  // genera una aleatoria). Con JARVIS_PASSWORD el main la fija a esta misma
+  // para que el smoke pueda autenticarse.
+  const password = process.env.JARVIS_SMOKE_PASSWORD ?? "smoke-test-password"
+  const authHeader = `Basic ${Buffer.from(`jarvis:${password}`).toString("base64")}`
   const env: Record<string, string> = {}
   for (const [key, value] of Object.entries(process.env)) {
     if (value !== undefined) env[key] = value
   }
   env.JARVIS_PORT = String(port)
+  env.JARVIS_PASSWORD = password
   const proc = Bun.spawn([exePath, "--disable-gpu", "--no-sandbox"], {
     stdout: "pipe",
     stderr: "pipe",
@@ -204,7 +253,9 @@ async function checkLaunch(exePath: string) {
   while (Date.now() < deadline) {
     if (proc.exitCode !== null) break
     try {
-      const res = await fetch(healthUrl)
+      const res = await fetch(healthUrl, {
+        headers: { authorization: authHeader },
+      })
       if (res.ok) {
         const body = (await res.json()) as { healthy?: boolean }
         if (body.healthy === true) {
@@ -228,6 +279,9 @@ async function checkLaunch(exePath: string) {
     const reason = alive
       ? "proceso vivo pero el server local no responde en " + healthUrl
       : `proceso terminó con exit code ${proc.exitCode}`
+    // El main process loguea a un archivo (electron-log), no a stdout: sin
+    // esto, un fallo del sidecar sería invisible en CI.
+    dumpAppLogs()
     fail(`Smoke de arranque falló: ${reason}.\n  stdout tail: ${stdoutTail || "(vacío)"}\n  stderr tail: ${stderrTail || "(vacío)"}`)
   } else {
     pass(`Server local healthy en ${healthUrl}`)

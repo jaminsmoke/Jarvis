@@ -378,7 +378,10 @@ const main = Effect.gen(function* () {
     })
     const hostname = "127.0.0.1"
     const url = `http://${hostname}:${port}`
-    const password = randomUUID()
+    // Test hook (mismo patrón que JARVIS_PORT): el smoke de release fija la
+    // password para poder autenticarse contra /global/health sin conocer el
+    // UUID generado en runtime.
+    const password = process.env.JARVIS_PASSWORD?.trim() || randomUUID()
 
     logger.log("spawning sidecar", { url })
     const { listener, health } = yield* Effect.promise(() =>
