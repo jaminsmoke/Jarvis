@@ -1,11 +1,13 @@
 import { expect, test } from "bun:test"
+import path from "path"
 import { testRender } from "@opentui/solid"
 import { abbreviateHome } from "../src/runtime"
 import { TuiPathsProvider, useTuiPaths } from "../src/context/runtime"
 
 test("abbreviates paths within home boundaries", () => {
+  const sep = path.sep
   expect(abbreviateHome("/home/test", "/home/test")).toBe("~")
-  expect(abbreviateHome("/home/test/project", "/home/test")).toBe("~/project")
+  expect(abbreviateHome(`/home/test${sep}project`, "/home/test")).toBe(`~${sep}project`)
   expect(abbreviateHome("/home/tester/project", "/home/test")).toBe("/home/tester/project")
   expect(abbreviateHome("/tmp/project", "/home/test")).toBe("/tmp/project")
 })
