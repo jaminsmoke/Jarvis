@@ -287,12 +287,12 @@ def latest_release_tag():
     raise KanbanError('Cannot reach GitHub API to resolve latest release')
 
 
-def next_patch(version):
+def version_key(version):
+    """Parse 'vX.Y.Z' into a comparable tuple, or None if unparseable."""
     match = re.match(r'^v(\d+)\.(\d+)\.(\d+)$', version)
     if not match:
-        raise KanbanError(f'Unparseable release version: {version}')
-    major, minor, patch = (int(g) for g in match.groups())
-    return f'v{major}.{minor}.{patch + 1}'
+        return None
+    return tuple(int(g) for g in match.groups())
 
 
 def tag_containing_commit(commit_sha):
@@ -681,12 +681,11 @@ def cmd_audit():
     except KanbanError as error:
         print(f"ERROR: {error}; audit requires GitHub API access", file=sys.stderr)
         return 1
+    latest_key = version_key(latest) if latest else None
     if latest is None:
-        target = "v0.1.0"
-        print(f"  No releases yet -> version objetivo={target}")
+        print("  No releases yet -> cualquier versión es válida")
     else:
-        target = next_patch(latest)
-        print(f"  Release latest={latest} -> version objetivo={target}")
+        print(f"  Release latest={latest} -> versión objetivo: cualquier versión superior")
     items = get_all_items()
     issues_found = 0
 
@@ -711,14 +710,18 @@ def cmd_audit():
         if ver == '-': problems.append('Version')
         elif ver == 'Sin asignar': problems.append('VERSION_SIN_ASIGNAR')
         elif ver not in KNOWN_VERSIONS: problems.append(f'VERSION_DESCONOCIDA:{ver}')
-        elif st in ACTIVE_STATUSES and ver != target:
-            problems.append(f'VERSION_ACTIVA_NO_OBJETIVO:espera_{target}_tiene_{ver}')
-        elif st == 'Changelog' and ver != target:
-            sha = re.search(r'\b[0-9a-f]{40}\b', ct.get('body') or '')
-            if sha:
-                tags = tag_containing_commit(sha.group(0))
-                if tags and ver not in tags:
-                    problems.append(f'VERSION_HISTORICA_INCOHERENTE:{ver}_commit_no_verificado')
+        elif st in ACTIVE_STATUSES:
+            key = version_key(ver)
+            if latest_key and (key is None or key <= latest_key):
+                problems.append(f'VERSION_ACTIVA_NO_OBJETIVO:espera_superior_a_{latest}_tiene_{ver}')
+        elif st == 'Changelog':
+            key = version_key(ver)
+            if not (latest_key and key and key > latest_key):
+                sha = re.search(r'\b[0-9a-f]{40}\b', ct.get('body') or '')
+                if sha:
+                    tags = tag_containing_commit(sha.group(0))
+                    if tags and ver not in tags:
+                        problems.append(f'VERSION_HISTORICA_INCOHERENTE:{ver}_commit_no_verificado')
         if prio == '-': problems.append('Prioridad')
         if (title.startswith('D-0') or title.startswith('✅ D-0')) and dec == '-': problems.append('Decision')
         if st == 'Changelog' and not is_issue: problems.append('DRAFT_EN_CHANGELOG')

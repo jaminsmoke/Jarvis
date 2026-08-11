@@ -559,7 +559,7 @@ class VersionAuditTests(unittest.TestCase):
         self.assertEqual(result, 2)
         self.assertEqual(output.getvalue().count("VERSION_SIN_ASIGNAR"), 2)
 
-    def test_flags_active_item_off_objective(self):
+    def test_flags_active_item_not_above_release(self):
         items = [project_item("Detectado", version="v0.1.4")]
         output = io.StringIO()
         with (
@@ -570,7 +570,26 @@ class VersionAuditTests(unittest.TestCase):
             result = kanban_sync.cmd_audit()
 
         self.assertEqual(result, 1)
-        self.assertIn("VERSION_ACTIVA_NO_OBJETIVO:espera_v0.1.5_tiene_v0.1.4", output.getvalue())
+        self.assertIn("VERSION_ACTIVA_NO_OBJETIVO:espera_superior_a_v0.1.4_tiene_v0.1.4", output.getvalue())
+
+    def test_active_item_above_release_passes(self):
+        items = [project_item(
+            "Detectado",
+            version="v0.1.51",
+            tipo="Bug",
+            area="Infra",
+            temporal={"Inicio": "2026-01-31", "Inicio exacto": "2026-01-31T22:00:00Z"},
+        )]
+        output = io.StringIO()
+        with (
+            patch.object(kanban_sync, "get_all_items", return_value=items),
+            patch.object(kanban_sync, "latest_release_tag", return_value="v0.1.5"),
+            redirect_stdout(output),
+        ):
+            result = kanban_sync.cmd_audit()
+
+        self.assertEqual(result, 0)
+        self.assertIn("OK All items OK!", output.getvalue())
 
     def test_active_item_on_objective_passes(self):
         items = [project_item(
@@ -667,11 +686,14 @@ class VersionAuditTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("audit requires GitHub API access", err.getvalue())
 
-    def test_next_patch_increments_patch_version(self):
-        self.assertEqual(kanban_sync.next_patch("v0.1.4"), "v0.1.5")
-        self.assertEqual(kanban_sync.next_patch("v1.2.9"), "v1.2.10")
-        with self.assertRaises(kanban_sync.KanbanError):
-            kanban_sync.next_patch("v0.1.4-beta")
+    def test_version_key_parses_and_compares(self):
+        self.assertEqual(kanban_sync.version_key("v0.1.4"), (0, 1, 4))
+        self.assertEqual(kanban_sync.version_key("v0.1.51"), (0, 1, 51))
+        self.assertEqual(kanban_sync.version_key("v1.2.9"), (1, 2, 9))
+        self.assertIsNone(kanban_sync.version_key("v0.1.4-beta"))
+        self.assertIsNone(kanban_sync.version_key("Sin asignar"))
+        self.assertTrue(kanban_sync.version_key("v0.1.51") > kanban_sync.version_key("v0.1.5"))
+        self.assertTrue(kanban_sync.version_key("v0.2.0") > kanban_sync.version_key("v0.1.5"))
 
 
 class BackfillTests(unittest.TestCase):
