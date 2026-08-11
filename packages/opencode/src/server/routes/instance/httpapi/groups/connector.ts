@@ -24,10 +24,27 @@ export const GitHubUser = Schema.Struct({
 })
 export type GitHubUser = Schema.Schema.Type<typeof GitHubUser>
 
+export const CapabilityGrant = Schema.Struct({
+  capabilityId: Schema.String,
+  supported: Schema.Boolean,
+  granted: Schema.Boolean,
+  enabled: Schema.Boolean,
+  active: Schema.Boolean,
+})
+export type CapabilityGrant = Schema.Schema.Type<typeof CapabilityGrant>
+
+export const ConnectorCapabilityState = Schema.Struct({
+  grants: Schema.Array(CapabilityGrant),
+  unknownScopes: Schema.Array(Schema.String),
+  discoveredAt: Schema.String,
+})
+export type ConnectorCapabilityState = Schema.Schema.Type<typeof ConnectorCapabilityState>
+
 export const GitHubConnectorStatus = Schema.Struct({
   enabled: Schema.Boolean,
   connected: Schema.Boolean,
   user: Schema.optional(GitHubUser),
+  capabilities: Schema.optional(ConnectorCapabilityState),
 })
 export type GitHubConnectorStatus = Schema.Schema.Type<typeof GitHubConnectorStatus>
 

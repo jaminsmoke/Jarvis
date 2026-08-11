@@ -1012,6 +1012,72 @@
   gap: 8px;
 }
 
+[data-slot="connector-modal-capability"] {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--v2-border-border-default);
+  background: var(--v2-background-bg-base);
+}
+
+[data-slot="connector-modal-capability"].is-active {
+  border-color: var(--v2-color-green-9);
+  background: var(--v2-color-green-1);
+}
+
+[data-slot="connector-modal-capability"].is-inactive {
+  border-color: var(--v2-border-border-default);
+  opacity: 0.7;
+}
+
+[data-slot="connector-modal-capability"].is-detected {
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+[data-slot="connector-modal-capability-info"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+[data-slot="connector-modal-capability-name"] {
+  font-size: 13px;
+  font-weight: 520;
+  color: var(--v2-text-text-base);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-slot="connector-modal-capability-badge"] {
+  font-size: 10px;
+  font-weight: 550;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+[data-slot="connector-modal-capability-badge"].is-write {
+  background: var(--v2-color-amber-2);
+  color: var(--v2-color-amber-10);
+}
+
+[data-slot="connector-modal-capability-status"] {
+  font-size: 11px;
+  color: var(--v2-text-text-muted);
+}
+
+[data-slot="connector-modal-capability-tools"] {
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--v2-text-text-secondary);
+}
+
 [data-slot="connector-modal-capabilities-title"] {
   margin: 0;
   font-size: 12px;

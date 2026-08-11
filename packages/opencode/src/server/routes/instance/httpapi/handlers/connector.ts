@@ -28,6 +28,7 @@ import { CONNECTORS, type ConnectorDefinition } from "@opencode-ai/schema/connec
 import { InstanceHttpApi } from "../api"
 import {
   ConnectorApiError,
+  ConnectorCapabilityState,
   DeviceFlowStart,
   GitHubConnectorStatus,
   GitHubUser,
@@ -136,19 +137,20 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
 
   return {
     status: Effect.fn(`ConnectorHttpApi.${def.id}Status`)(function* () {
-      if (def.disabled) return { enabled: false, connected: false }
+      if (def.disabled) return { enabled: false, connected: false, capabilities: undefined }
       const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const stored = current[0]
-      if (!stored) return { enabled: false, connected: false }
+      if (!stored) return { enabled: false, connected: false, capabilities: undefined }
 
       const metadata = metadataOf(stored.value) ?? {}
       const user = metadata.user as GitHubUser | undefined
       const enabled = metadata.enabled === true
+      const capabilities = metadata.capabilities as ConnectorCapabilityState | undefined
       // Legacy `key` credentials: still connected (the token exists and has no
       // expiry tracking). They migrate to OAuth on the next successful poll.
       if (!isOAuth(stored.value)) {
-        return { enabled, connected: true, user }
+        return { enabled, connected: true, user, capabilities }
       }
 
       let value = stored.value
@@ -160,13 +162,13 @@ function buildConnectorHandlers(def: ConnectorDefinition) {
         if (Option.isSome(refreshed) && refreshed.value) value = refreshed.value
       }
       const connected = value.expires === 0 || Date.now() <= value.expires
-      return { enabled, connected, user }
+      return { enabled, connected, user, capabilities }
     }),
 
     setEnabled: Effect.fn(`ConnectorHttpApi.${def.id}SetEnabled`)(function* (ctx: {
       payload: { enabled: boolean }
     }) {
-      if (def.disabled) return { enabled: false, connected: false }
+      if (def.disabled) return { enabled: false, connected: false, capabilities: undefined }
       const credential = yield* Credential.Service
       const current = yield* credential.list(INTEGRATION_ID)
       const existing = current[0]

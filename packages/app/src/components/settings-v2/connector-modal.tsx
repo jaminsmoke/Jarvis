@@ -7,7 +7,7 @@ import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { useLanguage } from "@/context/language"
 import { usePlatform } from "@/context/platform"
 import type { ConnectorController } from "@/connectors/use-connector"
-import type { ConnectorDefinition } from "@/connectors/registry"
+import { CAPABILITIES, type CapabilityGrant, type ConnectorCapabilityState, type ConnectorDefinition } from "@/connectors/registry"
 import "./settings-v2.css"
 
 export const ConnectorModal: Component<{
@@ -26,6 +26,25 @@ export const ConnectorModal: Component<{
   const error = connector.error
 
   const connectedUser = createMemo(() => (status().connected && !device() ? status().user : undefined))
+
+  const capabilities = createMemo(() => {
+    const s = status() as any
+    return s.capabilities as ConnectorCapabilityState | undefined
+  })
+
+  const connectorCapabilities = createMemo(() => {
+    const caps = capabilities()
+    if (!caps) return []
+    return CAPABILITIES.filter((cap) => props.def.id in cap.scopeAliases).map((cap) => {
+      const grant = caps.grants.find((g) => g.capabilityId === cap.id)
+      return {
+        ...cap,
+        granted: grant?.granted ?? false,
+        enabled: grant?.enabled ?? false,
+        active: grant?.active ?? false,
+      }
+    })
+  })
 
   const errorMessage = createMemo(() => {
     const code = error()
@@ -74,16 +93,38 @@ export const ConnectorModal: Component<{
             )}
           </Show>
 
-          {/* Capabilities / Tools list */}
-          <Show when={props.def.tools && props.def.tools.length > 0}>
+          {/* Capabilities list */}
+          <Show when={status().connected && connectorCapabilities().length > 0}>
             <div data-slot="connector-modal-capabilities">
-              <h4 data-slot="connector-modal-capabilities-title">Capabilities</h4>
+              <h4 data-slot="connector-modal-capabilities-title">Tools & Permissions</h4>
               <div data-slot="connector-modal-capabilities-list">
-                <For each={props.def.tools}>
-                  {(tool) => (
-                    <div data-slot="connector-modal-tool">
-                      <span data-slot="connector-modal-tool-name">{tool.name}</span>
-                      <span data-slot="connector-modal-tool-desc">{tool.description}</span>
+                <For each={connectorCapabilities()}>
+                  {(cap) => (
+                    <div
+                      data-slot="connector-modal-capability"
+                      classList={{
+                        "is-active": cap.active,
+                        "is-inactive": !cap.active && cap.granted,
+                        "is-detected": !cap.granted,
+                        "is-write": cap.risk === "write",
+                      }}
+                    >
+                      <div data-slot="connector-modal-capability-info">
+                        <span data-slot="connector-modal-capability-name">
+                          {cap.name}
+                          <Show when={cap.risk === "write"}>
+                            <span data-slot="connector-modal-capability-badge" class="is-write">write</span>
+                          </Show>
+                        </span>
+                        <span data-slot="connector-modal-capability-status">
+                          {cap.active ? "Active" : cap.granted ? "Inactive" : "Not granted"}
+                        </span>
+                      </div>
+                      <Show when={cap.tools.length > 0}>
+                        <div data-slot="connector-modal-capability-tools">
+                          {cap.tools.join(", ")}
+                        </div>
+                      </Show>
                     </div>
                   )}
                 </For>
@@ -91,12 +132,15 @@ export const ConnectorModal: Component<{
             </div>
           </Show>
 
-          {/* Coming soon for connectors without tools */}
-          <Show when={!props.def.disabled && !props.def.tools?.length}>
+          {/* Coming soon for connectors without capabilities */}
+          <Show when={!props.def.disabled && (!status().connected || connectorCapabilities().length === 0)}>
             <div data-slot="connector-modal-capabilities">
-              <h4 data-slot="connector-modal-capabilities-title">Capabilities</h4>
+              <h4 data-slot="connector-modal-capabilities-title">Tools & Permissions</h4>
               <p data-slot="connector-modal-coming-soon">
-                {language.t("settings.connectors.badge.comingSoon")} &mdash; tools will appear here once available.
+                {status().connected
+                  ? "No capabilities discovered. Reconnect to refresh."
+                  : language.t("settings.connectors.badge.comingSoon") + " — tools will appear here once available."
+                }
               </p>
             </div>
           </Show>
