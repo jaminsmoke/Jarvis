@@ -59,11 +59,8 @@ jobs:
         working-directory: packages/core
         run: bun test --timeout 30000
 
-      - name: Run unit tests (server)
-        timeout-minutes: 25
-        working-directory: packages/server
-        run: bun test --timeout 30000
-
+      # server no declara tests: bun test sin archivos *.test.* falla con exit 1
+      # en CI (pipefail), así que se omite explícitamente.
       - name: Run unit tests (client)
         timeout-minutes: 25
         working-directory: packages/client
