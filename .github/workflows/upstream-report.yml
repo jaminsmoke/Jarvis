@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: upstream-report
@@ -34,37 +35,30 @@ jobs:
           python scripts/upstream-report.py > /tmp/upstream-report.md
           echo "Informe generado ($(wc -l < /tmp/upstream-report.md) líneas)"
 
-      - name: Identidad del token (diagnóstico)
+      - name: Garantizar label upstream
+        # #51: el label 'upstream' es canónico (lo usa el kanban y la skill).
+        # GH_REPO fija el repo objetivo: sin él, `gh` resuelve el repo por los
+        # remotes git y podía apuntar al remote 'upstream' (sst/opencode) en
+        # vez del repo propio. Idempotente: --force crea o deja el label en
+        # estado canónico.
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          gh api user --jq '"Token GH_PAT como: " + .login'
-
-      - name: Garantizar label upstream (best-effort)
-        # #51: el GITHUB_TOKEN no puede crear issues ni gestionar labels en este
-        # repo (403 con issues:write), y el GH_PAT puede que tampoco gestione
-        # labels (404 en /labels). El label es opcional: el informe se publica
-        # y se encuentra por título. Si el token lo permite, se crea/actualiza
-        # el label (idempotente con --force); si no, se avisa y se continúa.
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          if gh label create upstream --force --color B60205 \
-            --description "Sincronización con upstream (informes semanales)" 2>/dev/null; then
-            echo "Label upstream garantizado"
-          else
-            echo "AVISO: el token no puede gestionar labels — el informe no depende del label (se encuentra por título)"
-          fi
+          gh label create upstream --force --color B60205 \
+            --description "Sincronización con upstream (informes semanales)"
+          echo "Label upstream garantizado"
 
       - name: Publicar informe (crear o comentar issue)
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           TITLE="Informe upstream (semanal)"
           ISSUE=$(gh issue list --search "in:title \"Informe upstream (semanal)\"" --state open \
             --json number --jq '.[0].number' 2>/dev/null || true)
           if [ -z "$ISSUE" ]; then
-            gh issue create --title "$TITLE" --body-file /tmp/upstream-report.md
+            gh issue create --title "$TITLE" --body-file /tmp/upstream-report.md --label upstream
             echo "Issue de informe creado"
           else
             gh issue comment "$ISSUE" --body-file /tmp/upstream-report.md
